@@ -168,6 +168,7 @@ div + .foo {
     body {
       counter-reset: allp 20;
       /* 重置为20 默认重置为0 */
+      /* 为了让span在div外面使用 body影响allp */
     }
 
     p {
@@ -205,7 +206,7 @@ div + .foo {
     <p>Praesentium quaerat harum dignissimos pariatur!</p>
   </div>
   <span>本文共<em></em>个段落</span>
-  <!-- 计数器是有作用域的 取决于哪些元素影响它 所有影响它的-->
+  <!-- 计数器是有作用域的 取决于哪些元素影响它 所有影响它的元素的外层的包裹元素就是他的作用域-->
 </body>
 
 </html>
@@ -356,6 +357,7 @@ div + .foo {
 
     li::before {
       content: counters(a, '.')'. ';
+      /* 每一层的a.拼起来 最后加上.  */
     }
   </style>
 </head>
@@ -543,7 +545,7 @@ input{
 ```css
 h1 {
       page-break-before: always;
-      /* 遇见h1之前换行 */
+      /* 遇见h1之前换页 */
       /* left是偶数页 */
     }
 
@@ -557,3 +559,7 @@ h1 {
 #### 回流与重绘 relayout repaint
 
 * 减少回流与重绘
+
+#### ie hack
+
+#### 条件注释

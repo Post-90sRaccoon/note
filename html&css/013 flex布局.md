@@ -90,7 +90,7 @@
 
   * flex-grow 的所有值加起来不足1，如0.1，0.2，0.3，剩余空间的0.6倍，按照1:2:3分配。
   
-* flex-shrink  默认值是1
+* flex-shrink  默认值是1   超出收缩
 
   * width与flex-shrink相乘得到收缩系数
   * 没有指定width  有字情况下，先不折行取宽度。
@@ -300,6 +300,293 @@
 #### order属性
 
 * 默认为0  值越大 往后排
+
+#### flex-basis 相当于宽度或者高度
+
+* 主轴水平，相当于宽度，主轴垂直，相当于高度。只要不为auto，flex-basis生效，宽高不生效。
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    div {
+      display: flex;
+      border: 5px solid #000;
+    }
+
+    @media(max-width:600px) {
+      div {
+        flex-direction: column;
+      }
+    }
+
+    [a] {
+      flex-basis: 100px;
+      width: 100%;
+      /* 小于600px 撑开父元素宽度 */
+      background-color: red;
+      height: 200px;
+      flex-grow: 1;
+    }
+
+    [b] {
+      flex-basis: 50px;
+      background-color: green;
+      flex-grow: 1;
+    }
+
+    [c] {
+      flex-basis: 100px;
+      background-color: yellow;
+      flex-grow: 1;
+    }
+  </style>
+</head>
+
+<body>
+  <div>
+    <section a>aa</section>
+    <section b>bb</section>
+    <section c>cc</section>
+  </div>
+</body>
+
+</html>
+```
+
+#### flex
+
+* none|[flex-grow flex-shrink || flex-basis]
+
+#### flex-flow
+
+* 主轴和交叉轴的方向
+
+#### 匿名flex子元素
+
+```html
+  <style>
+    div {
+      display: flex;
+    }
+  </style>
+</head>
+
+<body>
+  <div>
+    <section>aa</section>
+    匿名flex子元素
+    <section>bb</section>
+  </div>
+</body>
+```
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    div {
+      display: flex;
+      width: 200px;
+      height: 200px;
+      border: 1px solid #000;
+    }
+
+    section {
+      margin: auto;
+      /* flex中宽度没有占满父元素 而是尽可能窄 margin侵蚀剩余空间*/
+      background-color: red;
+    }
+  </style>
+</head>
+
+<body>
+  <div>
+    <section>bb</section>
+  </div>
+</body>
+
+</html>
+```
+
+```css
+div {
+      display: flex;
+      width: 200px;
+      height: 200px;
+      border: 1px solid #000;
+      justify-content: center;
+    }
+
+    section {
+      align-self: center;
+      background-color: red;
+    }
+```
+
+```css
+div {
+      display: flex;
+      width: 200px;
+      height: 200px;
+      border: 1px solid #000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    section {
+      background-color: red;
+    }
+```
+
+```css
+div {
+      display: flex;
+      width: 200px;
+      height: 200px;
+      border: 1px solid #000;
+      justify-content: center;
+      flex-wrap: wrap;
+      /* 变成行 */
+      align-content: center;
+    }
+
+    section {
+      background-color: red;
+    }
+```
+
+```css
+div {
+      display: flex;
+      width: 200px;
+      height: 200px;
+      border: 1px solid #000;
+      justify-content: center;
+      flex-wrap: wrap;
+      /* 变成行 */
+      align-content: space-around;
+    }
+
+    section {
+      background-color: red;
+    }
+```
+
+```css
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    div {
+      border: 5px solid #000;
+      margin: 50px;
+      display: flex;
+      flex-wrap: wrap;
+      width: 200px;
+      height: 200px;
+      justify-content: center;
+      align-content: space-around;
+    }
+
+    section {
+      opacity: 0.3;
+      width: 250px;
+      flex-shrink: 0;
+      height: 250px;
+      background-color: red;
+    }
+  </style>
+</head>
+
+<body>
+  <div>
+    <section></section>
+  </div>
+</body>
+
+</html>
+```
+
+```html
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>JS Bin</title>
+  <style>
+    * {
+      background-color: rgba(0, 0, 0, 0.1);
+    }
+
+    ul {
+      position: absolute;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      flex-wrap: wrap;
+      list-style-type: none;
+      height: 300px;
+      align-content: flex-start;
+      border: 2px solid red;
+      xbackground-color: yellow;
+    }
+
+    li {
+      background-color: yellow;
+      box-sizing: border-box;
+      xborder: 1px solid;
+      width: 120px;
+      height: 50px;
+    }
+
+    ul::after {
+      content: '';
+      background-color: yellow;
+      xborder: 1px solid;
+      flex-grow: 1;
+      height: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <ul>
+    <li>01</li>
+    <li>02</li>
+    <li>03</li>
+    <li>04</li>
+    <li>05</li>
+    <li>06</li>
+    <li>07</li>
+    <li>08</li>
+    <li>09</li>
+    <li>10</li>
+    <li>11</li>
+    <li>12</li>
+    <li>12</li>
+    <li></li>
+  </ul>
+</body>
+
+</html>
+```
 
 
 ```html

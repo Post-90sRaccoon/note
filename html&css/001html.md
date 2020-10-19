@@ -453,6 +453,8 @@ word一般叫做字。word的大小与系统硬件有关，数据总线为16位�
 
 * head 头部标签，放一些与页面相关的原信息。比如页面编码方式。
 
+* https://github.com/joshbuchea/HEAD
+
   `<meta charset="utf-8">`
 
   `<link rel="icon" href="https://www.baidu.com/img">`

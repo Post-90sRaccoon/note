@@ -221,6 +221,7 @@
 ```
 
 * multiple 无值属性 可以多选 多选就不是下拉的样式了，不同系统样式差别很大。很难被css控制。对ui要求高的网站用其他元素模拟下拉框。
+* 使用chosen和select2 社区画好的
 
 
 
@@ -403,7 +404,7 @@
   </table>
 ```
 
-* spacing属性 `<table border=1 cellspacing=0`> 双重线表格线重合成一条。 
+* ==spacing属性 `<table border=1 cellspacing=0`> 双重线表格线重合成一条。==
 
 * tr或者td or th不能与其他标签并列
 
