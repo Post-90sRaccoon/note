@@ -19,7 +19,7 @@
 
 * NaN
   * 类型是number Not a Number 
-  * 0/0    Infinity-Infinity
+  * 0/0    ==Infinity-Infinity==
   * NaN==NaN  false
 
 ### String
@@ -56,11 +56,19 @@
   
   ![image-20200108081127189](001%20Values%20Types,and%20Operators.assets/image-20200108081127189.png) 
 
+> 不同类型用 == 比
+>
+> 数字和字符串   字符串转换成数
+>
+> 布尔值和任何类型比较 布尔值都变成数字
+>
+> 对象和 字符串或数比   对象valueOf 或者 toString
+
 #### Comparisons
 
 *  'five' >4 false      'five' 转变成了NaN
 
-* 字符字符串按ascii码比较大小
+* 字符字符串按ascii码比较大小    str.charCodeAt()   String.fromCharCode(num)
 
 * console.log(NaN == NaN)   false
 
@@ -85,7 +93,7 @@
 
 ### Automatic Type Conversion
 
-5 * null               0
+==5 * nul==l               0
 
 5* undefined    NaN
 
