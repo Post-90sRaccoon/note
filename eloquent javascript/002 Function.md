@@ -75,7 +75,9 @@ var z=(a+1,b+2,a+b)
 z=3 //a+1 b+2 语句也会执行
 ```
 
+![image-20201027162542892](002%20Function.assets/image-20201027162542892.png)
 
+![image-20201027163027228](002%20Function.assets/image-20201027163027228.png)
 
 
 
@@ -98,12 +100,14 @@ z=3 //a+1 b+2 语句也会执行
 
   
 
-* isNaN 是否是一个数值类型的值/不能被转换为数值
+* isNaN() 是否是一个数值类型的值/不能被转换为数值
 
   is Not a Number
 
   ‘fasa’  true
 
+  
+  
   NaN   true
   
   ‘ ’         false
@@ -128,7 +132,10 @@ z=3 //a+1 b+2 语句也会执行
 
   0010
 
-* -99 怎么表示    2 ^31^-99   写成2进制 前面加1即可     2 ^31^-1-99 +1   取反加一
+* -1 +  1   -2+2  的反码都是全1 
+
+* 整数运算会被转换为32位有符号数   -99 怎么表示    2 ^31^-99   因为-1 1…11+ 1 = 2<sup>31</sup>   2 ^31^-1-99 +1   取反加一
+
 * 000 +8 =8  001+ 7 =8   010 +6 = 8
 
 
@@ -159,7 +166,7 @@ z=3 //a+1 b+2 语句也会执行
 
 a.toString(2) 数字转化为二进制
 
-0x hex
+0x hex 
 
 0o 八进制
 
@@ -178,7 +185,7 @@ a.toString(2) 数字转化为二进制
 ```javascript
 a = 2147483647
 console.log(a.toString(2))
-//111111111111111111111111111111  31位
+//111111111111111111111111111111  31位 前面隐藏了一位符号位
 c = 2147483648
 console.log(c | 0)
 //- 2147483648
@@ -214,7 +221,7 @@ c++  会改变c的类型 转换成数值类型
 
 c+=1   不转换类型
 
-parseInt('99 fafsdas',16)    153  转换为16进制
+parseInt('99 fafsdas',16)    153   ==99按照16进制解析成十进制数位153==
 
 
 
@@ -236,6 +243,21 @@ switch (4) {
 }
 // d
 // b
+
+switch (4) {
+  case 1:
+    console.log('a')
+    break
+  default:
+    console.log('d')
+  case 2:
+    console.log('b')
+    break
+  case 4:
+    console.log('c')
+    break
+}
+//c
 
 
 switch (2) {
@@ -278,7 +300,7 @@ switch (2) {
 ```javascript
 //使用牛顿法实现平方根的计算
 function sqrt(n) {
-  var r = n
+  var r = n          
   //i是迭代次数 精确度
   for (var i = 0; i < 10; i++) {
     r = (r * r + n) / (2 * r)
@@ -506,7 +528,23 @@ var a = function() {
 
   #### 回文数
 
-  ![image-20200605103552287](002%20Function.assets/image-20200605103552287.png)
+  ![](002%20Function.assets/image-20200605103552287.png)
+  
+  ```html
+  var isPalindrome = function (x) {
+      if (x < 0) return false
+      if (x < 10) return true
+      let n = 10 ** ((Math.log10(x))|0)
+      while (n > 1 && x > 0) {
+          if (((x / n)|0) !== x % 10) return false
+          x = ((x % n) / 10) | 0
+          n /= 100
+      }
+      return true
+  };
+  ```
+  
+  
 
 ![image-20200605104755034](002%20Function.assets/image-20200605104755034.png)
 
