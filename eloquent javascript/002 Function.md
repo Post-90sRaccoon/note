@@ -158,9 +158,18 @@ z=3 //a+1 b+2 语句也会执行
 
   a << 2
 
-  a >>> 2   （不保留符号位）
+  a >>> 2   （不保留符号位,右移左侧用0填充）
 
+> **js** 进行位运算时，会将操作数转成带符号位的 32 位补码。运算结束后，再按照 64 位存储。这里肯定会精度丢失，超过 32 位的部分直接截断。
+>
+> 所以对一个非数值变量做取反操作，得到的一定是 -1，因为实际上等于对 0 做取反操作。
 
+> 移位操作符在移位前做了两种转换，第一将不是`number`类型的数据转换为`number`，第二将`number`转换为无符号的`32bit`数据，也就是`Uint32`类型。
+>
+> * `Uint32`类型是如何转换的
+>   1. 如果不能转换为`Number`，那就为`0`
+>   2.  如果为非整数，先转换为整数，参考公式`sign(n) ⋅ floor(abs(n))`
+>   3.  如果是正数，返回正数，如果是负数，返回负数 + 2的32次方，（原理符号位变0 再右移）
 
 0b 二进制
 
@@ -620,7 +629,7 @@ function weekday(year, month) {
   return (sum + 1) % 7
 }
 
-function getDayOfMonth(month, year) {
+function getDayOfMonth(m, y) {
   if (m == 2) {
     if (isLeapYear(y)) {
       return 29
@@ -682,7 +691,7 @@ foo()
 // 9 从bar定义的位置看
 ```
 
-* var只有函数作用域  单纯的{}括起来的不能算作用域  没有块级作用域
+* ==var只有函数作用域== 单纯的{}括起来的不能算作用域  没有块级作用域
 * let 声明的变量有块级作用域 es6
 
 ```javascript
@@ -871,4 +880,101 @@ function power(base, exponent) {
 }
 ```
 
-* 所有参数被放在arguments 这个只能在函数内部访问的特殊变量中。arguments[0]表示第一个参数，arguements.length 表示实际传入的参数个数，它是一个类数组对象，array like object
+* ==所有参数被放在arguments 这个只能在函数内部访问的特殊变量中。arguments[0]表示第一个参数，arguements.length 表示实际传入的参数个数，它是一个类数组对象，array like object==
+
+#### hamming距离
+
+```java
+var hammingDistance = function(x, y) {
+    var z = x ^ y
+    var count = 0
+    while(z) {
+       z &= z - 1
+        //每次去掉最右面的一个1
+        count++
+      }
+    return count
+};
+```
+
+#### 判断4的幂
+
+```javascript
+// 数学方法 x=4的a次幂 a=log4X= 1/2log2X a是整数 所以log2X为偶数即可
+var isPowerOfFour = function(num) {
+    return  Math.log2(num)%2==0
+};
+
+//位运算法 先判断是否是2的幂  2的幂1在奇数位是4的幂 1在偶数位不是4的幂
+//4的幂 & 10101010...10 为0
+// var isPowerOfFour = function(num) {
+//     return num > 0 && (num & (num-1)) == 0  && (num & 0xaaaaaaaa) == 0
+// };
+```
+
+#### 颠倒给定的 32 位无符号整数的二进制位。
+
+```javascript
+var reverseBits = function(n) {
+    var a = ((n & 0b10101010101010101010101010101010)>>>1)| ((n & 0b01010101010101010101010101010101)<<1)
+    // n的偶数位右移  n的奇数位左移 相邻两位换
+    var b =((a & 0b11001100110011001100110011001100)>>>2)|((a & 0b00110011001100110011001100110011)<<2)
+    // 相邻4位换
+    a =((b & 0b11110000111100001111000011110000)>>>4)|((b & 0b00001111000011110000111100001111)<<4)
+    // 相邻8位换
+    b =((a & 0b11111111000000001111111100000000)>>>8)|((a & 0b00000000111111110000000011111111)<<8)
+    // 相邻16位换
+    a =((b & 0b11111111111111110000000000000000)>>>16)|((b & 0b00000000000000001111111111111111)<<16)
+    // 相邻32位换
+  return a >>> 0
+   //转换成无符号数   
+};
+```
+
+#### Pow(x,n)
+
+```javascript
+// 使用递归
+// function myPowCompute(x,n){
+// if(n==0) return 1
+// return n%2 == 0 ? myPowCompute(x,n/2) ** 2 : myPowCompute(x,n/2|0)** 2 * x
+// }
+// var myPow = function(x, n) {
+//  return n<0? 1/myPowCompute(x,n):myPowCompute(x,n)
+// };
+
+// 不使用递归
+// 用二进制表示n 拼出n
+function myPowCompute(x,n){
+    let ans = 1
+    // 贡献初始值x
+    let contribute = x
+    while(n>0){
+        if(n % 2==1){
+            // 如果2进制末位为1，要记入贡献
+            ans *= contribute
+        }
+        // 贡献不断平方
+        contribute *=contribute
+        // 去掉n二进制末位 每次判断最低位即可
+        n = n/2|0
+    }
+    return ans
+}
+
+function myPow(x,n) {
+    return n >= 0 ? myPowCompute(x, n) : 1.0 / myPowCompute(x, -n);
+}
+
+// var myPow = function(x, n, m = 0, h) {
+//     return n === 0 ? 1 : n === 1 ? x : 
+//     (n < 0 && (m = 1, n = -n), h = myPow(x, n >>> 1, 0), h *= h * (n & 1 ? x : 1), m ? 1 / h : h)
+// };
+
+// var myPow = function(x, n, sum = 1, m = 0) {
+//     n < 0 && (n = -n, m = 1)
+//     while (n) n & 1 && (sum *= x), x *= x, n >>>= 1
+//     return m ? 1 / sum : sum
+// }
+```
+
