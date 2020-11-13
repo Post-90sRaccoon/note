@@ -192,5 +192,90 @@ var minimumTotal = function (triangle) {
   return minTotal
 };
 
+//自底向上
+var minimumTotal = function (triangle) {
+  let n = triangle.length
+  let arr = new Array(n+1).fill(0)
+  for (let i = n - 1; i >= 0; i--) {
+    for (let j = 0; j <= i; j++) {
+      arr[j] = triangle[i][j] + Math.min(arr[j], arr[j + 1])
+    }
+  }
+  return arr[0]
+};
+```
+
+####  最大子序和
+
+> ```
+> [-2,1,-3,4,-1,2,1,-5,4]
+> ```
+
+```javascript
+//动态规划 nums 长度为n 下标从0到n-1
+// f(i) 表示第i个数结尾的 连续最大子数和 f(i) = max{f(i-1)+ai,ai}
+// f(i) 只和f(i-1)相关 可以用一个变量pre 维护当前f(i-1)的值
+
+var maxSubArray = function (nums) {
+  let pre = 0
+  let maxAns = nums[0]
+  for (let i = 0; i < nums.length; i++) {
+    pre = Math.max(pre + nums[i], nums[i])
+    maxAns = Math.max(maxAns, pre)
+  }
+  return maxAns
+}
+
+// 分治
+// 定义一个操作 get(nums,l,r) 表示查询nums序列[l,r]区间内最大子段和
+// 对于[l,r] 取m= (l+r) >> 1 对区间[l,m] 和[m+1,r]  分治求解
+// 递归逐层深入直到区间长度缩小为 1 的时候，递归「开始回升」
+// lSum 表示以l为左端点的最大子段和
+// rSum 表示以r为右端点的最大子段和
+// mSum 表示[l,r]内最大子段和
+// iSum 表示[l,r]的区间和
+// [l,m]左子区间 [m+1,r]右子区间
+
+// isum 等于左子区间iSum 加上右子区间iSum
+// lsum 等于左子区间lsum与（左子区间iSum加上右子区间的rSum）的最大值
+// rsum 等于右子区间iSum与（左子区间rSum加上右子区间的iSum）的最大值
+// mSum 是否跨越m [l,r]的mSum可能是左子间的mSum和右子区间的mSum 或左子区间的rSum和右子区间lSum求和 三者取大
+
+function Status(l, r, m, i) {
+  this.lSum = l
+  this.rSum = r
+  this.mSum = m
+  this.iSum = i
+}
+
+function pushUp(l, r) {
+  const iSum = l.iSum + r.iSum
+  const lSum = Math.max(l.lSum, l.iSum + r.lSum);
+  const rSum = Math.max(r.rSum, r.iSum + l.rSum);
+  const mSum = Math.max(Math.max(l.mSum, r.mSum), l.rSum + r.lSum);
+  return new Status(lSum, rSum, mSum, iSum)
+}
+
+function getInfo(a, l, r) {
+  if (l === r) {
+    return new Status(a[l], a[l], a[l], a[l]);
+  }
+  const m = (l + r) >> 1;
+  const lSub = getInfo(a, l, m);
+  const rSub = getInfo(a, m + 1, r);
+  return pushUp(lSub, rSub);
+}
+
+var maxSubArray = function (nums) {
+  return getInfo(nums, 0, nums.length - 1).mSum
+}
+
+//简写
+var maxSubArray = function (nums) {
+  var s = (iSum, lSum, rSum, mSum) => ({ iSum, lSum, rSum, mSum }),
+    q = (l, r) => s(l.iSum + r.iSum, Math.max(l.lSum, l.iSum + r.lSum), Math.max(r.rSum, r.iSum + l.rSum), Math.max(l.mSum, r.mSum, r.lSum + l.rSum)),
+    f = (i, j, m, l, r) => i === j ? s(nums[i], nums[i], nums[i], nums[i]) : (m = (i + j) >> 1, l = f(i, m), r = f(m + 1, j), q(l, r))
+  return f(0, nums.length - 1).mSum
+};
 ```
 
