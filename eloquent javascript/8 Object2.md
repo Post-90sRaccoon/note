@@ -279,3 +279,216 @@ var maxSubArray = function (nums) {
 };
 ```
 
+#### 搜索插入位置
+
+> 给定一个排序数组和一个目标值，在数组中找到目标值，并返回其索引。如果目标值不存在于数组中，返回它将会被按顺序插入的位置。
+>
+> 你可以假设数组中无重复元素。
+
+```javascript
+var searchInsert = function(nums, target) {
+    let left = 0
+    let right = nums.length-1
+    while(left<=right){
+        let mid = (right + left)>>1
+        if(nums[mid] == target){
+            return mid
+        }else if(nums[mid]>target){
+            right = mid - 1
+        }else if(nums[mid]<target){
+            left = mid + 1
+        }
+    }
+    return left
+};
+
+var searchInsert = function (nums, target) {
+  for (let i = 0; i < nums.length; i++) {
+    if (nums[i] == target) {
+      return i
+    } else if (nums[i] > target) {
+      return i
+    }
+  }
+  return nums.length
+};
+```
+
+#### 搜索旋转排序数组
+
+> 数组本为升序排列，但在某个点进行了旋转 [0,1,2,4,5,6,7]=>[4,5,6,7,0,1,2]  数组中搜索target 返回索引 否则返回-1
+
+```javascript
+var search = function(nums, target) {
+  let left = 0
+  let right = nums.length - 1
+  while(left <= right){
+    let mid = (right + left) >> 1
+    //(right - left ) >> 1+ left 
+    if(nums[mid] == target){
+        return mid
+    }
+    if(nums[left] <= nums [mid]){
+    //[left,mid]是有序数组
+      if(nums[left]<=target && target < nums[mid]){
+          right = mid - 1
+      }else{
+          left = mid + 1
+      }
+    }else{
+    //[mid+1,right]是有序数组
+    if(nums[mid]<target && target<=nums[right]){
+        left = mid +1
+    }else{
+        right = mid - 1
+    }
+    }
+  }
+  return -1
+};
+
+
+var search = function (nums, target) {
+  let left = 0, right = nums.length - 1;
+  while (left < right) {
+    let mid = (left + right) >> 1;
+    if ((nums[0] > target) ^ (nums[0] > nums[mid]) ^ (target > nums[mid]))
+    // 不可能三项为真 两项为真结果为假 一项为真 结果为真
+      left = mid + 1;
+    else
+      right = mid;
+  }
+  return left == right && nums[left] == target ? left : -1;
+}
+```
+
+#### 升序二维数组找数
+
+```javascript
+var searchMatrix = function (matrix, target) {
+  if (matrix.length == 0) return false
+  let m = matrix.length
+  let n = matrix[0].length
+  let left = 0
+  let right = m * n - 1
+  while (left <= right) {
+    let mid = (left + right) >> 1
+    let row = mid / n | 0
+    let col = mid - (row * n)
+    if (matrix[row][col] == target) {
+      return true
+    } else if (matrix[row][col] > target) {
+      right = mid - 1
+    } else if (matrix[row][col] < target)
+      left = mid + 1
+  }
+  return false
+};
+```
+
+> [
+>   [1,   4,  7, 11, 15],
+>   [2,   5,  8, 12, 19],
+>   [3,   6,  9, 16, 22],
+>   [10, 13, 14, 17, 24],
+>   [18, 21, 23, 26, 30]
+> ]
+
+```javascript
+//迭代对角线 分别对行或者列进行二分查找
+function binarySearch(matrix, target, start, vertical) {
+  let low = start
+  let high = vertical ? matrix.length - 1 : matrix[0].length - 1
+  while (high >= low) {
+    let mid = (high + low) / 2 | 0
+    if (vertical) { // searching a column
+      if (matrix[mid][start] < target) {
+        low = mid + 1;
+      } else if (matrix[mid][start] > target) {
+        high = mid - 1;
+      } else {
+        return true;
+      }
+    } else { // searching a row
+      if (matrix[start][mid] < target) {
+        low = mid + 1;
+      } else if (matrix[start][mid] > target) {
+        high = mid - 1;
+      } else {
+        return true;
+      }
+    }
+  }
+  return false
+}
+
+function searchMatrix(matrix, target) {
+  if (matrix == null || matrix.length == 0) {
+    return false;
+  }
+
+  // iterate over matrix diagonals
+  let shorterDim = Math.min(matrix.length, matrix[0].length);
+  for (let i = 0; i < shorterDim; i++) {
+    verticalFound = binarySearch(matrix, target, i, true);
+    horizontalFound = binarySearch(matrix, target, i, false);
+    if (verticalFound || horizontalFound) {
+      return true;
+    }
+  }
+  return false;
+}
+
+
+//从左下角向上 右遍历 
+var searchMatrix = function(matrix, target) {
+    if(matrix === null || matrix.length === 0 || matrix[0].length === 0) return false;
+    let col = 0;
+    let row = matrix[0].length - 1;
+    while(col < matrix.length && row >=0) {
+        if(matrix[col][row] > target) {
+            row--;
+        }  else if(matrix[col][row] < target) {
+            col++
+        } else {
+            return true;
+        }
+    }
+    return false;
+}
+
+// 搜索空间缩减 划分四个子矩阵 两个可能包含目标 两个不包含
+// 两种方法可以确定一个任意元素目标是否可以用常数时间判断。第一，如果数组的区域为零，则它不包含元素，因此不能包含目标。其次，如果目标小于数组的最小值或大于数组的最大值，那么矩阵肯定不包含目标值
+function searchRec(matrix, target, left, right, up, down) {
+  //子矩阵没有高度 或者宽度
+  if (left > right || up > down) {
+    return false
+  }
+  //如果target大于子矩阵最大值或者小于子矩阵最小值
+  else if (target < matrix[up][left] || target > matrix[down][right]) {
+    return false
+  }
+
+  let mid = (left + right) / 2 | 0
+  //定位row 使matrix[row-1][mid] < target < matrix[row][mid]
+  let row = up
+  while (row <= down && matrix[row][mid] <= target) {
+    if (matrix[row][mid] == target) {
+      return true
+    }
+    row++
+  }
+  return searchRec(matrix, target, left, mid - 1, row, down) || searchRec(matrix, target, mid + 1, right, up, row - 1)
+  //如果row>down 左面false 右面扫描martix[row-1][mid]右面所有的
+  //如果matrix[row][mid] > target  左面向左扫描  右面向前一行右面扫描
+}
+
+var searchMatrix = function (matrix, target) {
+  if (matrix == null || matrix.length == 0) {
+    return false
+  }
+
+  return searchRec(matrix, target, 0, matrix[0].length - 1, 0, matrix.length - 1)
+}
+```
+
