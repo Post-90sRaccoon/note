@@ -492,3 +492,88 @@ var searchMatrix = function (matrix, target) {
 }
 ```
 
+#### 搜索旋转排序二叉树
+
+> 有重复数字时
+
+```javascript
+// 11101
+// left 1 right 1 mid 1 无法判断前面有序还是后面有序 left++
+var search = function (nums, target) {
+  let left = 0
+  let right = nums.length - 1
+  while (left <= right) {
+    let mid = (left + right) >> 1
+    if (nums[mid] == target) {
+      return true
+    } else if (nums[left] == nums[mid] && nums[right] == nums[mid]) {
+      left++
+      continue
+    } else if (nums[left] <= nums[mid]) {
+      if (nums[left] <= target && target < nums[mid]) {
+        right = mid - 1
+      } else {
+        left = mid + 1
+      }
+    } else {
+      if (nums[mid] < target && target <= nums[right]) {
+        left = mid + 1
+      } else {
+        right = mid - 1
+      }
+    }
+  }
+  return false
+};
+```
+
+#### 旋转数组
+
+> ```
+> 输入: [1,2,3,4,5,6,7] 和 k = 3
+> 输出: [5,6,7,1,2,3,4]
+> ```
+
+```javascript
+//使用额外数组 i放到新数组（i+k）%nums.length
+
+//环状替代
+// 把每一个数字放到它应该到的位置 被替换元素保存 被替换元素放到正确位置。
+// 如果 n%k==0 其中 k=k%n (k大于n，移动k 相当于移动 k\%n 次) 没遍历所有数字就会会到出发数字
+var rotate = function (nums, k) {
+  let n = nums.length
+  k = k % n
+  let count = 0
+  for (let start = 0; count < n; start++) {
+    let currentIdx = start
+    let currentValue = nums[start]
+    do {
+      let nextIdx = (currentIdx + k) % n
+      let nextValue = nums[nextIdx]
+      nums[nextIdx] = currentValue
+      currentIdx = nextIdx
+      currentValue = nextValue
+      count++
+    } while (currentIdx != start)
+  }
+};
+  
+// 反转法
+var rotate = function (nums, k) {
+  let n = nums.length
+  k = k % n
+  reverse(nums,0,n-1)
+  reverse(nums,0,k-1)
+  reverse(nums,k,n-1)
+}
+function reverse(nums, start, end) {
+  while (start < end) {
+    let temp = nums[start]
+    nums[start] = nums[end]
+    nums[end] = temp
+    start++
+    end--
+  }
+}
+```
+
