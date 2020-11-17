@@ -612,3 +612,102 @@ s = new Set()
 s.add()
 ```
 
+#### 链表相邻两个节点交换
+
+```javascript
+var swapPairs = function (head) {
+  if (head === null || head.next === null) {
+    return head
+  }
+
+  let p = head.next
+  head.next = swapPairs(p.next)
+  p.next = head
+  return p
+};
+
+var swapPairs = function(head) {
+    const dummyHead = new ListNode(0);
+    dummyHead.next = head;
+    let temp = dummyHead;
+    while (temp.next !== null && temp.next.next !== null) {
+        const node1 = temp.next;
+        const node2 = temp.next.next;
+        temp.next = node2;
+        node1.next = node2.next;
+        node2.next = node1;
+        temp = node1;
+    }
+    return dummyHead.next;
+};
+```
+
+#### 链表去重
+
+```javascript
+var deleteDuplicates = function(head) {
+    let current = head;
+    while (current != null && current.next != null) {
+        if (current.next.val == current.val) {
+            current.next = current.next.next;
+        } else {
+            current = current.next;
+        }
+    }
+    return head;
+};
+```
+
+#### 判断列表是否有环
+
+```javascript
+var hasCycle = function(head) {
+    var a = head
+    var b = head
+    
+    while(a && b) {
+      a = a.next
+      b = b.next
+      if(!b) {
+        return false
+      }else {
+        b = b.next
+      }
+      if(a == b) {
+        return true
+      }
+    }
+    // head为空
+    return false
+};
+```
+
+#### 环形链表进入点
+
+![image-20201117201719211](9%20Object3%20%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1.assets/image-20201117201719211.png)
+
+```javascript
+var detectCycle = function(head) {
+    let p = head
+    let q = head 
+    while(p&&q){
+        p = p.next
+        q = q.next
+        if(q){
+            q=q.next
+        }else{
+            return null
+        }
+        if(p == q){
+            p = head
+            while(p!=q){
+                p = p.next
+                q = q.next
+            }
+            return p
+        }
+    }
+    return null
+};
+```
+

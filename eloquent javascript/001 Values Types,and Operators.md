@@ -124,3 +124,43 @@ console.log(2 || 3 || 4 || 5)
 * 支持自动/隐式类型转化的语言 弱类型语言  js c
 
   不支持的 强类型语言 python
+
+#### 归并排序
+
+> 数组一分为二，分别排序
+>
+> 将两个有序的数组组合合并回去
+
+```javascript
+function mergeSort(ary) {
+  if (ary.length == 0 || ary.length == 1) {
+    return ary
+  }
+
+  let mid = ary.length >> 1
+  let left = ary.slice(0, mid)
+  let right = ary.slice(mid)
+
+  left = mergeSort(left)
+  right = mergeSort(right)
+
+  let i = 0
+  let j = 0
+  let k = 0
+  while (i < left.length && j < right.length) {
+    if (left[i] <= right[j]) {
+      ary[k++] = left[i++]
+    } else {
+      ary[k++] = right[j++]
+    }
+  }
+  while (i < left.length) {
+    arr[k++] = right[i++]
+  }
+  while (j < right.length) {
+    arr[k++] = right[j++]
+  }
+  return ary
+}
+```
+

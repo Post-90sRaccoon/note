@@ -577,3 +577,270 @@ function reverse(nums, start, end) {
 }
 ```
 
+### 链表
+
+```javascript
+let list = {
+  value: 1,
+  rest: {
+    value: 2,
+    rest: {
+      value: 3,
+      rest: null
+    }
+  }
+}
+```
+
+#### 数组转链表
+
+```javascript
+function arrayToList(ary) {
+  if (ary.length == 0) {
+    return null
+  }
+
+  let dummy = {}
+  // 头结点
+  let prev = dummy
+
+  for (let i = 0; i < ary.length; i++) {
+    let node = {
+      val: ary[i],
+      next: null,
+    }
+    prev.next = node
+    prev = node
+  }
+
+  return dummy.next
+}
+
+function arrayToList3(ary) {
+  if (ary.length == 0) {
+    return null
+  }
+  let head = {
+    value: ary[0],
+    next: arrayToList3(ary.slice(1))
+  }
+  return head
+}
+
+
+// 将ary数组从start开始到结束的元素们转换链表
+// 并返回转换好以后的头结点
+function arrayToList4(ary, start = 0) {
+  if (start == ary.length) {
+    return null
+  }
+
+  let head = {
+    value: ary[start],
+    next: arrayToList4(ary, start + 1)
+  }
+  return head
+}
+```
+
+#### 链表转换成数组
+
+```javascript
+function listToArray(head) {
+  let ary = []
+  if (head == null) {
+    return ary
+  }
+  while (head) {
+    ary.push(head.val)
+    head = head.next
+  }
+  return ary
+}
+
+function listToArray2(head) {
+  if (head == null) {
+    return []
+  }
+  return [head.val].concat(listToArray2(head.next))
+}
+```
+
+#### 链表头部/尾部/任意位置添加元素
+
+```javascript
+function prepend(val,head){
+  let node ={
+    val:val,
+    next:head
+  }
+  return node
+}
+
+function append(val, head) {
+  if (head == null) {
+    return {
+      val: val,
+      next: null
+    }
+  }
+  let p = head
+  while (p.next) {
+    p = p.next
+  }
+  p.next = {
+    val: val,
+    next: null,
+  }
+  return head
+}
+
+function append2(val, head) {
+  if (head == null) {
+    return {
+      val: val,
+      next: null
+    }
+  }
+  head.next = append2(val, head.next)
+  return head
+}
+```
+
+#### 查询链表
+
+```javascript
+function nth(head, idx) {
+  if (head == null || idx < 0) {
+    return undefined
+  }
+
+  let i = 0
+  let p = head
+
+  while (p.next && i < idx) {
+    p = p.next
+    i++
+  }
+
+  if (i == idx) {
+    return p.val
+  } else {
+    return undefined
+  }
+}
+
+function nth2(head, idx) {
+  if (head == null || idx < 0) {
+    return undefined
+  }
+  if (idx == 0) {
+    return head.val
+  }
+  return nth2(head.next, idx - 1)
+}
+```
+
+#### 反转链表
+
+```javascript
+var reverseList = function(head) {
+    let p = new ListNode()
+    while(head){
+        let q = head.next
+        head.next = p.next
+        p.next = head
+        head = q
+    }
+    return p.next 
+};
+
+function reverseList(head) {
+  if (head == null || head.next == null) {
+    return head;
+  }
+  p = reverseList(head.next);
+  head.next.next = head;
+  head.next = null;
+  return p;
+}
+```
+
+#### 删除节点
+
+```javascript
+var deleteNode = function(node) {
+  node.val = node.next.val
+  node.next = node.next.next
+};
+```
+
+#### 合并两个有序列表
+
+```javascript
+var mergeTwoLists = function (l1, l2) {
+  if (!l1 && !l2) {
+    return null
+  }
+  let head = new ListNode()
+  let p = head
+  let p1 = l1
+  let p2 = l2
+  while (p1 && p2) {
+    if (p1.val <= p2.val) {
+      p.next = new ListNode(p1.val)
+      p = p.next
+      p1 = p1.next
+    }
+    else {
+      p.next = new ListNode(p2.val)
+      p = p.next
+      p2 = p2.next
+    }
+  }
+  while (p1) {
+    p.next = new ListNode(p1.val)
+    p = p.next
+    p1 = p1.next
+  }
+  while (p2) {
+    p.next = new ListNode(p2.val)
+    p = p.next
+    p2 = p2.next
+  }
+  return head.next
+};
+
+
+//递归方法
+var mergeTwoLists = function (l1, l2) {
+  if (l1 === null) return l2;
+  if (l2 === null) return l1;
+  if (l1.val < l2.val) {
+    l1.next = mergeTwoLists(l1.next, l2);
+    return l1;
+  } else {
+    l2.next = mergeTwoLists(l1, l2.next);
+    return l2;
+  }
+}
+
+//复用结点
+var mergeTwoLists = function (l1, l2) {
+  let preHead = new ListNode();
+  let pre = preHead;
+  while (l1 && l2) {
+    if (l1.val < l2.val) {
+      pre.next = l1;
+      l1 = l1.next;
+    } else {
+      pre.next = l2;
+      l2 = l2.next;
+    }
+    pre = pre.next;
+  }
+  pre.next = l1 ? l1 : l2;
+  return preHead.next;
+}
+```
+
