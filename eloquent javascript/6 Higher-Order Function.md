@@ -1,7 +1,7 @@
 # 6 Higher-Order Function
 
    ```javascript
-//self-contained 自包含的 自解释的
+//self-contained 自包含的 自解释的 不调用额外函数
 var total = 0, count = 1
 while (count <= 10) {
   total += count
@@ -56,7 +56,6 @@ var g = f()
 // 右面运行f 返回一个函数add g指向函数add
 console.log(g(1, 2))
 //3 
-
 ```
 
 
@@ -200,7 +199,7 @@ console.log(noisy(Boolean)(0))
 // false
 ```
 
-* 可以通过函数提供新型的控制流
+* 可以通过函数提供新型的控制流 高阶函数里套函数
 
   ```java
   function unless(test, then) {
@@ -240,7 +239,7 @@ console.log(noisy(Boolean)(0))
     //把f所有参数变成数组
     return g.apply(null,args)
     //apply 把args的每一个元素 抽出来 作为参数 返回函数的运行结果
-  }fu
+  }
   ```
 
   ```javascript
@@ -253,7 +252,7 @@ console.log(noisy(Boolean)(0))
   f(...[5, 1, 8])
   //...把数组展开 a=5 b=1 c=8 d=undefined
   f.apply(null, [1, 2, 3, 4, 5, 6, 7])
-  //传七个参数 a=1 b=2 c=3 d=4 可通过argument用后面的参数
+  //传七个参数 a=1 b=2 c=3 d=4 可通过argument使用后面多余的参数
   
   ```
 
@@ -278,7 +277,7 @@ console.log(noisy(Boolean)(0))
   ]
 ```
 
-* 所有属性必须双引号包裹，而且只能简单数据表达式(直接量)，不能有运算。双引号内部不能出现明文tab符，不能出现任意多余符号，没有undefined和NaN 有null
+* 所有属性必须双引号包裹，而且只能简单数据表达式(直接量)，不能有运算。双引号内部不能出现明文tab符，不能出现任意多余符号，没有undefined和NaN 只有null
 
 ```javascript
 var jsonString = `
@@ -305,7 +304,7 @@ console.log(JSON.stringify(ary))
 
 JSON.stringify(ary, null, 2)
 //缩进两个空格 遇到} ] , 就回车
-
+//第二个参数是函数 该函数参数(key,value) 如果返回undefined 这一项不会添加到json里
 console.log(JSON.parse(`{"a":"1"}`))
 //{ a: '1' }
 ```
@@ -314,7 +313,7 @@ console.log(JSON.parse(`{"a":"1"}`))
 
 * JSON.parse  把JSON的string转化为js的数据            反序列化
 
-#### Filtering an array                           
+#### Filtering an array
 
 ```javascript
 function filter(ary, test) {
@@ -354,7 +353,7 @@ console.log(ancestry.filter(function(person){
 function map(ary, mapper) {
   var result = []
   for (var i = 0; i < ary.length; i++) {
-    result.push(mapper(ary[i]), i, ary)
+    result.push(mapper(ary[i], i, ary))
   }
   return result
 }
@@ -363,7 +362,7 @@ ancestry.map(function (p, idx) {
   return p.name
 })
 
-//fliter返回数组 map返回值
+//fliter返回选出的整个数组 map返回数组里的值
 //链式调用
 ancestry.filter(function (p, idx) {
   return p.died - p.born > 50
@@ -388,10 +387,8 @@ var f = a => a * a
 
 ancestry.filter(p => p.died - p.born > 50).map(p => p.name)
 
-f => (...args) => f(...args)
+let transWrap = f => (...args) => f(...args)
 ```
-
-
 
 * 箭头函数没有arguments
 
