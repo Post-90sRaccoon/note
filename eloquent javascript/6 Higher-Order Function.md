@@ -130,8 +130,8 @@ forEach([1, 2, 3, 4], console.log)
 //数组或对象使用
 function forEach(obj, action) {
   if (Array.isArray(obj)) {
-    for (var i = 0; i < Array.length; i++) {
-      action(ary[i], i, ary)
+    for (var i = 0; i < obj.length; i++) {
+      action(obj[i], i, obj)
     }
   } else {
     for (var key in obj) {
@@ -877,6 +877,9 @@ console.log(f2())
 var f3 = f2.bind(null, 5)
 console.log(f3())
 //8
+
+//apply 接收参数数组 返回函数执行值
+//bing  接收参数     返回参数值绑定的函数
 ```
 
 #### 名字返回人
@@ -955,7 +958,7 @@ f2 = bind(add, 1)
 //没有...
 function bind(f ) {
   var fixedArgs = Array.from(arguments).slice(1)
-  return function (...args) {
+  return function () {
     var args = Array.from(arguments)
     return  f.apply(null,fixedArgs.concat(args))
   }
@@ -966,7 +969,7 @@ function bind(f ) {
 
 ```javascript
 function map(ary, transform) {
-  ary.reduce(result, (result, item, idx, ary) => {
+  return ary.reduce((result, item, idx, ary) => {
     result.push(transform(item, item, idx, ary))
     return result
   }, [])
@@ -977,7 +980,7 @@ function map(ary, transform) {
 
 ```javascript
 function filter(ary, test) {
-  return ary.reduce(result, (result, item, idx, ary) => {
+  return ary.reduce((result, item, idx, ary) => {
     if (test(result, item, idx, ary)) {
       result.push(item)
     }
