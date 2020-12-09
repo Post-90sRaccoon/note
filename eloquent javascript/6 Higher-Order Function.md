@@ -970,7 +970,7 @@ function bind(f ) {
 ```javascript
 function map(ary, transform) {
   return ary.reduce((result, item, idx, ary) => {
-    result.push(transform(item, item, idx, ary))
+    result.push(transform(item, idx, ary))
     return result
   }, [])
 }
@@ -981,7 +981,7 @@ function map(ary, transform) {
 ```javascript
 function filter(ary, test) {
   return ary.reduce((result, item, idx, ary) => {
-    if (test(result, item, idx, ary)) {
+    if (test(item, idx, ary)) {
       result.push(item)
     }
     return result
@@ -1017,5 +1017,225 @@ f1 = f.bind(null, 1, 2)
 // }
 console.log(f1(1, 1))
 //4 
+```
+
+```javascript
+['1', '2', '3'].map(parseInt)
+// 1 NaN NaN
+
+parseInt('1', 0, ['1', '2', '3'])
+// 1当十进制理解
+parseInt('2', 1, ['1', '2', '3'])
+// 2当做1进制 NaN
+parseInt('3', 2, ['1', '2', '3'])
+// 3当做2进制 NaN
+```
+
+#### flatten
+
+```javascript
+function flatten(ary) {
+  let result = []
+  for (let i = 0; i < ary.length; i++) {
+    let item = ary[i]
+    if (Array.isArray(item)) {
+      result.push(...item)
+    } else {
+      result.push(item)
+    }
+  }
+  return result
+}
+
+function flatten(ary) {
+  return ary.reduce((result, item) => {
+    if (Array.isArray(item)) {
+      result.push(...item)
+    } else {
+      result.push(item)
+    }
+    return result
+  }, [])
+}
+
+function flatten(ary) {
+  return ary.reduce((result, item) => {
+    return result.concat(item)
+  }, [])
+}
+
+let flatten = ary => [].concat(...ary)
+```
+
+#### flattenDeep
+
+```javascript
+function flattenDeep(ary) {
+  let result = []
+  for (let i = 0; i < ary.length; i++) {
+    let val = ary[i]
+    if (Array.isArray(val)) {
+      result.push(...flattenDeep(val))
+    } else {
+      result.push(val)
+    }
+  }
+  return result
+}
+
+function flattenDeep(ary) {
+  return ary.reduce((result, item) => {
+    if (Array.isArray(item)) {
+      result.push(...flattenDeep(item))
+    } else {
+      result.push(item)
+    }
+    return result
+  }, [])
+}
+
+console.log(flattenDeep([1, 2, [3, 4], [[5]], [[[6, [7]]]]]))
+```
+
+#### flattenDepth
+
+```javascript
+function flattenDepth(ary, depth) {
+  if (depth === 0) {
+    return ary.slice()
+  }
+  let result = []
+  for (let i = 0; i < ary.length; i++) {
+    let val = ary[i]
+    if (Array.isArray(val)) {
+      result.push(...flattenDepth(val, depth - 1))
+    } else {
+      return result.push(val)
+    }
+  }
+  return result
+}
+
+function flattenDepth(ary, depth) {
+  if (depth === 0) {
+    return ary.slice()
+  }
+  return ary.reduce((result, item) => {
+    if (Array.isArray(item)) {
+      result.push(...flattenDepth(item, depth - 1))
+    } else {
+      result.push(item)
+    }
+    return result
+  }, [])
+} 
+
+
+function flatten(ary){
+  return flattenDepth(ary,1)
+}
+function flattenDeep(ary){
+  return flattenDepth(ary,Infinity)
+  // 并不会无穷递归 item总有不是数组的时候
+}
+
+// 如果depth是第一个参数
+let flatten = flattenDepth.bind(null,1)
+let flattenDeep = flattenDepth.bind(null,Infinity)
+```
+
+#### every and some
+
+```javascript
+function every(ary, test) {
+  for (let i = 0; i < ary.length; i++) {
+    if (!test(ary[i], i, ary)) {
+      return false
+    }
+  }
+  return true
+}
+
+function some(ary, test) {
+  for (let i = 0; i < ary.length; i++) {
+    if (test(ary[i], i, ary)) {
+      return true
+    }
+  }
+  return false
+}  
+
+
+function every(ary, cond) {
+  return ary.reduce((pass, item, idx, ary) => {
+    return pass && cond(item, idx, ary)
+  }, true)
+}
+function some(ary, cond) {
+  return ary.reduce((pass, item, idx, ary) => {
+    return pass || cond(item, idx, ary)
+  }, false)
+}
+
+// a && b
+// !(!a || !b)
+
+function every(ary, test) {
+  function notTest(...args) {
+    return !test(...args)
+  }
+  return !some(ary, notTest)
+}
+
+function every(ary, test) {
+  return !some(ary, (...args) => !test(...args))
+}
+function some(ary, test) {
+  return !every(ary, (...args) => !test(...args))
+}
+```
+
+#### 问题解析
+
+```javascript
+function flip(func) {
+  return function (...args) {
+    return func(...args.reverse())
+  }
+}
+
+parseInt2 = flip(parseInt)
+parseInt3 = parseInt2.bind(null, 16)
+  ;['1', '2', 'a'].map(parseInt3)
+//[1,NaN,1]
+
+/*
+  parseInt3('1',0,['1','2','3']) -> parseInt2(16,'1',0,['1','2','3']) -> parseInt(['1','2','3'],0,'1',16)
+
+  parseInt(['1','2','3'],0,'1',16)
+  // 1
+  //parseInt 第一个参数必须是字符串 转换成字符串 "1,2,a"
+  //不认逗号 "1" 0进制解析 0不认 作为10进制 1
+
+  parseInt(['1','2','3'],1,'1',16)
+  //NaN 1进制不存在
+
+  parseInt(['1','2','3'],2,'1',16)
+  // 1  2进制解析为1
+*/
+
+
+
+// 限制接收参数
+function unary(func) {
+  return function (arg) {
+    return func(arg)
+  }
+}
+
+parseInt2 = flip(parseInt)
+parseInt3 = parseInt2.bind(null, 16)
+  ;['1', '2', 'a'].map(unary(parseInt3))
+
 ```
 
