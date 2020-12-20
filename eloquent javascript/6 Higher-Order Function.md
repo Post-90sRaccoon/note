@@ -1239,3 +1239,113 @@ parseInt3 = parseInt2.bind(null, 16)
 
 ```
 
+### lodash中的bind
+
+```javascript
+function bind(f, ...fixedArgs) {
+  return function (...args) {
+    let newArgs = fixedArgs.slice()
+    let index = 0
+    for (let i = 0; i < newArgs.length; i++) {
+      if (newArgs[i] == null) {
+        newArgs[i] = args[index++]
+      }
+    }
+    if (index < args.length) {
+      newArgs.push(args[index++])
+    }
+    return f.apply(this , newArgs)
+  }
+}
+```
+
+#### lodash中的filter
+
+```javascript
+function filter(collection, predicate) {
+  let test = predicate
+  if (typeof predicate === 'string') {
+    test = it => it[predicate]
+  } else if (typeof predicate === 'object') { //{active:true,gender:'f}
+    if (Array.isArray(predicate)) {//['active',true,'gender','f']
+      predicate = fromPairs(chunk(predicate, 2))
+    }
+    test = it => {
+      for (let key in predicate) {
+        if (it[key] !== predicate[key]) {
+          return false
+        }
+      }
+      return true
+    }
+  } else if (typeof predicate === 'function') {
+    test = predicate
+  }
+
+  let result = []
+  if (Array.isArray(collection)) {
+    for (let i = 0; i < collection.length; i++) {
+      if (test(collection[i], i, collection)) {
+        result.push(collection[i])
+      }
+    }
+  } else {
+    for (key in collection) {
+      if (test(collection[key], key, collection)) {
+        result.push(collection[key])
+      }
+    }
+  }
+  return result
+}
+
+let users = [
+  { 'user': 'barney', 'age': 36, 'active': true },
+  { 'user': 'fred', 'age': 40, 'active': false }
+]
+
+console.log(filter(users, function (o) { return !o.active; }))
+console.log(filter(users, { 'age': 36, 'active': true }))
+console.log(filter(users, ['active', false]))
+console.log(filter(users, 'active'))
+
+let users1 = {
+  a: { 'user': 'barney', 'age': 36, 'active': true },
+  b: { 'user': 'fred', 'age': 40, 'active': false }
+}
+
+console.log(filter(users1, function (o) { return !o.active; }))
+console.log(filter(users1, { 'age': 36, 'active': true }))
+console.log(filter(users1, ['active', false]))
+console.log(filter(users1, 'active'))
+
+
+
+function fromPairs(ary) {
+  let result = {}
+  let length = ary == null ? 0 : ary.length
+  let index = -1
+  while (++index < length) {
+    let pair = ary[index]
+    result[pair[0]] = pair[1]
+  }
+  return result
+}
+
+function chunk(ary, size = 1) {
+  let length = ary == null ? 0 : ary.length
+  if (!length || size < 1) {
+    return []
+  }
+  let index = 0, resIndex = 0
+  let result = new Array(Math.ceil(length / size))
+
+  while (index < length) {
+    result[resIndex++] = ary.slice(index, index += size)
+  }
+  return result
+}
+```
+
+
+
