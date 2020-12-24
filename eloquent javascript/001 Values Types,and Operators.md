@@ -90,6 +90,7 @@
 *  undefined  类型undefined
 * undefined == null    true
 * 自身也相等
+* null ==  ‘’   //false
 
 ### Automatic Type Conversion
 
