@@ -2,7 +2,7 @@
 
 ## 方法
 
-* 方法是指向了函数值的普通属性
+* 方法是指向了函数的普通属性
 
   ```javascript
   var rabbit = {}
@@ -115,6 +115,7 @@ f()        //单独的函数调用
 ```
 
 #### this的指向
+
 * this 指向什么取决于函数的调用形式 不取决于函数的定义位置 调用位置
 
 * 函数能访问到的非形参变量 取决于函数在哪定义 以及他在哪个作用域  形参优先
@@ -219,7 +220,7 @@ j()
   
   function fn()  
   {  
-      this.user = 'haaha';  
+      this.user = 'haha';  
       return undefined;
   }
   var a = new fn;  
@@ -254,7 +255,7 @@ console.log(a); //fn {user: "haha"}  fn类型
 ```javascript
 var empty = {}
 console.log(empty.toString)
-//[Function: toString]
+//[Function: toString] 没有打印undefined
 console.log(empty.toString())
 //[object Object]
 ```
@@ -280,15 +281,16 @@ console.log(Object.getPrototypeOf(Object.prototype))
 
 ```javascript
 p = { a: 1, b: 2 }
-empty._proto_ = p
+empty.__proto__ = p
 //p所指的对象成了empty的原型
 empty.a //1
 empty.b //2
 
-p._proto_ = null
+//p.__proto__ = null
+//执行完上面操作会乱
 
 empty.a = 8 //增加自己的a属性 不会修改原型上的
-empty._proto_.a = 9 //修改原型
+empty.__proto__.a = 9 //修改原型
 
 Array.a = 1
 var a = []
@@ -321,12 +323,28 @@ ary._proto_.push === Array.prototype.push
 ```
 
 ```javascript
-delete String.toString   //删除String的toString属性
+'FJSDAK'.__proto__ === String.prototype
+// true
+String.prototype.__proto__ === Object.prototype
+// true
+
+String.prototype.toString == Object.prototype.toString
+// false
+
+
+
+delete String.prototype.toString   //删除String的toString属性
+'adsf'.toStirng === Object.prototype.toString
+//删除后为true 
+'FAS'.toStirng()
+//"[object String]"
 odjToString = Object.prototype.toString
 
 //调用Object.prototype的toString方法 
 objoString.call('a')
+//"[object String]"
 Object.prototype.toString.call('c')
+//"[object String]"
 ```
 
 ![image-20200611142552000](7%20Object.assets/image-20200611142552000.png)
@@ -334,6 +352,10 @@ Object.prototype.toString.call('c')
 ```javascript
 function(){}._proto_ === Function.prototype  //报错
 (function () { }).__proto__ === Function.prototype // true
+
+function getPrototypeOf(val){
+  return val.__proto__
+}
 ```
 
 
@@ -350,6 +372,9 @@ console.log(String.__proto__ === Object.prototype
 console.log(String.__proto__ === Function.prototype
 )
 //true
+
+Object.prototype.__proto__
+//null
 ```
 
 
@@ -359,11 +384,10 @@ console.log(String.__proto__ === Function.prototype
 * 可以使用Object.create()来创建一个被指定了特定原型的对象
 
 ```javascript
-var obj ={}
-obj = Object.create({a:1,b:2})
-//返回一个对象 obj以{a:1,b:2} 为原型
+let obj = Object.create({a:1,b:2})
+//返回一个对象{} obj以{a:1,b:2} 为原型
 
-obj._proto_ === {a:1,b:2}
+obj.__proto__ === {a:1,b:2}
 //false 这里的{a:1,b:2} 不是create里面的对象了 
 ```
 
@@ -374,22 +398,25 @@ function speak(line) {
 var rabbiteProto = {
   speak: speak
 }
-r1 = { type: fat }
+
+r1 = { type: 'fat' }
 Object.setPrototypeOf(r1, rabbiteProto)
 
 
-r2 = { type: white }
 r2 = Object.create(rabbiteProto)
+r2.type = 'fat'
 
 
-r3 = { type: killer }
-r3._proto_ = rabbiteProto
+r3 = { type: 'killer' }
+r3.__proto__ = rabbiteProto
 
 r0 = Object.create(rabbiteProto, {
   type: { value: 'killer' },
   age: { value: 18 },
   gender: { value: 'boy' }
 })
+
+//{type: "killer", age: 18, gender: "boy"}
 ```
 
 #### 创建一系列以相同对象为原型的对象
@@ -401,11 +428,11 @@ r1 = Object.create(proto, { type: { value: 'killer', writable: false, enumerable
 r1.type = 999 //赋值   type还是killer
 
 r3 = { type: 'fat' }
-r3._proto_ = proto
+r3.__proto__ = proto
 
 r4 = {
   type: 'four',
-  _proto_: proto
+  __proto__: proto
 }
 
 r5 ={type:'five'}
@@ -415,8 +442,8 @@ Object.setPrototypeOf(r5,proto)
 ## 构造函数
 
 * 创建共享原型对象（用于访问公共属性）更方便的方法是使用构造函数
-* 当一个函数调用前面带有一个new关键字的时候，这个函数就被当做一个构造函数
-* 构造函数的this指向全新的空对象
+* ==当一个函数调用前面带有一个new关键字的时候==，这个函数就被当做一个构造函数  new function a(){}
+* ==构造函数的this指向全新的空对象==  new f() 指向新对象  f()指向window
 * 除非明确的返回另一个对象值，这个this指向的新的对象就会被返回，return 2  2会被忽略
 
 ```javascript
@@ -433,7 +460,7 @@ console.log(a)
 
 * 一个用new创建出来的对象一般被称做这个函数的实例
 * 所有function都有prototype属性（ 箭头函数没有）  
-* 这个属性默认指向空对象  里面只有consrtructor 指向自己   TreeNode.prototype  一般都以Object.prototype为原型
+* 这个属性默认指向空对象  里面有consrtructor 属性指向函数自己   TreeNode.prototype  一般都以Object.prototype为原型
 * 每一个被这个函数创建出来的实例都将以这个对象的prototype作为其原型对象
 
 ```javascript
@@ -455,7 +482,7 @@ console.log(a.__proto__ === TreeNode.prototype)
 
 //给对象添加一个属性(方法)
 TreeNode.prototype.getValue = function () {
-  return this.value
+  return this.val
 }
 
 a.getValue()
@@ -466,7 +493,7 @@ c.getValue()
 //3
 ```
 
-* \__proto\__属性 null 和undefined 没有 
+* \__proto\_\_属性 null 和undefined 没有 
 
 ```javascript
 Rabbit.prototype.speak = function(line){
@@ -477,17 +504,21 @@ blackRabbit.speak("Doom")
 
 * ==函数有prototype属性==
 
-  ==对象有\_proto\_原型==
+  ==对象有\_\_proto\_\_原型==
 
   ==构造函数自己的原型是 Function.prototype==
 
-* TreeNode.prototype === a.\_proto\_
-* TreeNode.\_proto\_ === Function.prototype
-* Function.\_proto\_  === Function.prototype
+* TreeNode.prototype === a.\_\_proto\_\_
+
+* TreeNode.\_\_proto\_\_ === Function.prototype  
+
+* ==Function.\_\_proto\_\_  \=\=\= Function.prototype==     前一个Function是函数的构造函数 后一个是函数的构造函数的protoype属性
+
+* Function.prototype.\_\_proto\_\_ === Object.prototype
 
 ```javascript
 d ={}
-d._proto_ = TreeNode.prototype //核心 仅仅是原型指向构造函数的原型属性
+d.__proto__ = TreeNode.prototype //核心 仅仅是原型指向构造函数的原型属性 就会判定是TreeNode 不管是不是new创建的
 // d TreeNode{}
 ```
 
@@ -514,9 +545,9 @@ d._proto_ = TreeNode.prototype //核心 仅仅是原型指向构造函数的原�
   a.getValue = 8 //给对象a添加了属性
   a.getValue() //报错 不是方法
   
-  a._proto_.getValue()
-  //不行 成了a._proto_.的getValue
-  a._proto_.getValue.call(a)
+  a.__proto__.getValue()
+  //不行 成了a.__proto__.的getValue this不是a了 是a.__proto__
+  a.__proto__.getValue.call(a)
   //1 
   ```
 
@@ -542,12 +573,17 @@ d._proto_ = TreeNode.prototype //核心 仅仅是原型指向构造函数的原�
   //[1,2,3]
   
   Object.prototype.toString.call(1)
-  Object.prototype.toString.call(2)
+  //"[object Number]"
   Object.prototype.toString.call(true)
+  //"[object Boolean]"
   Object.prototype.toString.call("fdsfd")
+  //"[object String]"
   Object.prototype.toString.call(null)
+  //"[object Null]"
   Object.prototype.toString.call(undefined)
+  //"[object Undefined]"
   Object.prototype.toString.call(() => 1)
+  //"[object Function]"
   
   function isNumber(val){
     return Object.prototype.toString.call(val) === '[object Number]'
@@ -578,12 +614,12 @@ d._proto_ = TreeNode.prototype //核心 仅仅是原型指向构造函数的原�
       this.rightTree = rightTree
     },
   }
-  //new之前可以 但也会覆盖原来的prototype属性 new之后会覆盖
+  //new之前可以 但也会覆盖原来的prototype属性   new之后没用 因为实例已经指向原来的prototype属性了
   
   
   TreeNode.prototype.setValue = function(val){
     this.val = val
-  }
+  }//这里不能用箭头函数 箭头函数没有this
   TreeNode.prototype.setLeft = function(leftTree){
     this.left = leftTree
   }
@@ -617,6 +653,7 @@ storePhi("pizza", 0.069)
 storePhi("touched tree", -0.081)
 //用for/in loop 填值  用in运算符查看是否在map里
 
+
 Object.prototype.nonsense = 'hi'
 for (var name in map) {
   console.log(name)
@@ -628,6 +665,8 @@ for (var name in map) {
 
 toString in map
 //true
+'foo' in map 
+//true 自己有或原型链上有都返回真
 ```
 
 #### 创建不可枚举属性
@@ -645,12 +684,13 @@ Object.defineProperties(a, {
   c: { value: 1, writable: false },
   d: { value: 1, writable: false }
 })
-
+//这样要现有一个对象
 
 obj2 = Object.create(null, {
   a: { value: 1, writable: false, enumerable: true },
   b: { value: 8, writable: true }
 })
+//这样不需要有对象
 ```
 
 * 所有直接赋值到对象上的属性都是可枚举的
@@ -707,8 +747,8 @@ for (var key in map) {
 //遍历函数自由属性
 function forOwn(obj, action) {
   var hasOwn = Object.prototype.hasOwnProperty
-  for (var key in map) {
-    if (hasOwn.call(map, key)) {
+  for (var key in obj) {
+    if (hasOwn.call(obj, key)) {
       action(obj[key], key, obj)
     }
   }
@@ -751,7 +791,7 @@ obj = {
   })()
 
 obj.bar()
-// 函数调用obj
+// 函数调用obj  {val: 1, a: 2, bar: ƒ}
 ```
 
 ```javascript
@@ -761,12 +801,14 @@ function f() {
 
 f2 = f.bind(f, obj1, 1, 2)
 f2()
-
+//this是obj1 
+f2.call(obj2)
+//还是obj1
 
 
 function bind(f, thisArg, ...fixedArgs) {
   return function bound(...args) {
-    return f.call(thisArg, ...fixedArgs.concat(args))
+    return f.call(thisArg, ...fixedArgs,...args))
     //f.apply(thisArg, fixedArgs.concat(args))
     //apply 传入一个数组 不能分开
   }
@@ -781,7 +823,7 @@ f3()
 
 a = new f()
 //this 是新创建对象 对象以f的prototype为原型
-//f不返回对象 会返回this
+//如果f不返回对象 会返回this
 ```
 
 #### 箭头函数的不同
@@ -870,25 +912,40 @@ function forEach(ary, action) {
 
 var ary = [1, 2, 3]
 [4, 5].forEach(ary.push)
-//尝试把push(ary[i], i, ary) 的this undefined 转换为数组   
-ary.push(4, 0, [4, 5])
+//push的this是undefined 不是ary
+//can not convert undefined or null to object 
+f()
+//this是window 或undefined
+//尝试把push(ary[i], i, ary) 的this undefined 转换为类  数组  
 
+
+ary.push(4, 0, [4, 5])
+ 
 
 
 p = ary.push
-p(5) //this还是 数组
-p.call(obj2={0:1,1:2,length:2},8)
+p(5) //this还是undefined
+p.call(obj2={0:1,1:2,length:2}, 8)
+//obj2 {0: 1, 1: 2, 2: 8, length: 3}
 
+ary = [1,2,3]
 [3.5].forEach(ary.push.bind(ary))
+//[1,2,3,3,0,Array(2),5,1,Array(2)] 还push了3,5的下标和数组
 
-
-[3.5].forEach(ary.push,thisArgOfFirstArgument)
+[3.5].forEach(ary.push,【thisArgOfFirstArgument】)
 //ary.push的this 变成 指定参数
+[3,5].forEach(ary,push,ary)  
+//也会push3,5的下标和数组
 
+[3,5].forEach(::ary.push) 
+//语法可以还不支持  从对象取出函数时 保留当初的this
 
+//ary[1,2,3]
 p=ary.push.bind(ary)
 p(5)
+//[1,2,3,5]
 p(6)
+//[1,2,3,5,6]
 
 function forEach(ary, action,thisArg=undefined) {
   for (var i = 0; i < ary.length; i++) {
@@ -898,9 +955,7 @@ function forEach(ary, action,thisArg=undefined) {
 
 ```
 
-![image-20200613085542147](7%20Object.assets/image-20200613085542147.png)
-
-* f() 这样调用 this是window 或者 undefined
+![image-20201227225123445](7%20Object.assets/image-20201227225123445.png)
 
 ```javascript
 var a = [1, 3, 4, 5, 2];
@@ -910,18 +965,13 @@ var a = [1, 3, 4, 5, 2];
 console.log(a)
 //[1, 3, 4, 5, 2, 8, 0, [8, 9], 9, 1, [8, 9]]
 
-
-var a = [1]
-
-[8, 9].forEach(a.push.call(a))
-// 报错()传的是a.push call a 的结果 相当于调用push 返回数 代表数组被push后的长度 apply 同理不行
-
-console.log(a.push.call(a))
-//1 相当于a,push()
-
 [1,2,3].forEach((it)=>a.push(it))
 a.push(...[1,2,3])
 ```
+
+> 每个对象都有原型，__proto__属性
+>
+> 当在一个对象上查找某个属性找不到时，会去其原型对象上找。还找不到，会去其原型的原型上找。 
 
 ```javascript
 //伪代码
@@ -932,7 +982,7 @@ function getProperty(obj, p) {
   if (obj has own property p) {
     return obj[p]
   } else {
-    return getProperty(obj._proto_, p)
+    return getProperty(obj.__proto__, p)
   }
 }
 ```
@@ -947,9 +997,9 @@ a = Object.create(proto)
 b = Object.create(proto)
 
 a = {}
-a._proto_ = proto
+a.__proto__ = proto
 b = {}
-b._proto_ = proto
+b.__proto__ = proto
 
 
 function TreeNode(val) {
@@ -961,7 +1011,7 @@ var a = new TreeNode(1)
 var b = new TreeNode(2)
 var c = new TreeNode(3)
 
-// a._proto_ 和 TreeNode.prototype 指向同一个对象
+// a.__proto__ 和 TreeNode.prototype 指向同一个对象
 ```
 
 * 匿名函数、箭头函数的名字是第一次绑定的变量的变量名，`.name`调用
