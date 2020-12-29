@@ -5,13 +5,15 @@ console.log(new String('woefj'))
 //创建一个包装对象 [String: 'woefj']
 
 String(2)
-//转化成string
+//转化成string 这样直接调用toString方法
 
 function concatenate(a, b) {
   return a.concat(b)
 }
 //可以拼接数组 或者 字符串
 ```
+* 多态可以和不同形态的值共同工作 只要他们支持多态代码所需要的接口
+
 ```javascript
 console.log("abc\ndef\nghi".split("\n"))
 //[ 'abc', 'def', 'ghi' ]
@@ -34,7 +36,7 @@ Cell.prototype.minWidth = function () {
   //reduce传多个参数 只要两个
 }
 // Cell.prototype.minWidth = function () {
-//   return Math.max(this.str.split('\n').map(it => it.length))
+//   return Math.max(...this.str.split('\n').map(it => it.length))
 // }
 Cell.prototype.minHeight = function () {
   return this.str.split('\n').length
@@ -68,6 +70,41 @@ Cell.prototype.draw = function (width, height) {
 rows = data.map(rowStrs => {
   return rowStrs.map(str => new Cell(str))
 })
+
+function rowHeights(rows) {
+  return rows.map(function (row) {
+    return row.reduce(function (max, cell) {
+      return Math.max(max, cell.minHeight)
+    }, 0)
+  })
+}
+function colWidths(rows) {
+  return row[0].map(function (_, i) {//取列标
+    return rows.reduce(function (max, row) {
+      return Math.max(max, row[i].minWidth())
+    }, 0)
+  })
+}
+
+function drawTable(rows) {
+  let heights = rowHeights(rows)
+  let widths = colWidths(rows)
+
+  function drawLine(blocks, lineNo) {
+    return blocks.map(function (block) {
+      return block[lineNo]
+    }).join(" ")
+  }
+  function drwaRow(row, rowNum) {
+    let blocks = row.map(function (cell, colNum) {
+      return cell.draw(widths[colNum], heights[rowNum])
+    })
+    return blocks[0].map(function (_, lineNo) {
+      return drawLine(blocks, lineNo)
+    }).join('\n')
+  }
+  return rows.map(drwaRow).join('\n')
+}
 ```
 
 ### 递归

@@ -10,7 +10,7 @@
 
 ```javascript
 function canYouSpotTheProblem() {
-  "use strict";
+  "use strict";//在某一个作用域的顶端写
   for (counter = 0; counter < 10; counter++)
     console.log("Happy happy")
 }
@@ -18,8 +18,8 @@ function canYouSpotTheProblem() {
 
 function Person(name) {
   this.name = name
-  var ferdinand = Person("Ferdinand") //没有new this是window
-  console.log(name)
+  var ferdinand = Person("Ferdinand") //没有new this是window 严格模式下不被当做方法或构造函数的函数被调用时this是undefined
+  console.log(name)                   //use strict写在函数声明的作用域里而不是 调用的地方
 }
 
 function A() {
@@ -33,11 +33,10 @@ function A() {
 
 ```javascript
 "use strict"
-function Person(name) {
-  this.name = name
-  var ferdinand = Person("Ferdinand")
-  console.log(name)
-}
+function Person(name) {this.name = name}
+var ferdinand = Person("Ferdinand")
+console.log(name)
+
 //报错 this是undefined
 //严格模式 禁止给一个函数的多个参数起相同名字
 ```
@@ -46,9 +45,9 @@ function Person(name) {
 //with
 var obj = { a: 1, b: 2 }
 var c = 10
-with (obj) {
+with (obj) { //把对象的属性集合作为作用域 
   let a = 3
-  console.log(a + b + c) //15
+  console.log(a + b + c) // b从obj里找 15
 }
 obj.a //3
 
@@ -84,7 +83,9 @@ babeljs.io
 
 > mdn strict mode 去mdn看
 >
-> 严格模式通过抛出错误来消除了一些原有静默错误 //不报错
+> 严格模式通过抛出错误来消除了一些原有静默错误 //不报错   
+>
+> ​    给不可写属性赋值 删除不可删除的属性会报错 参数必须不同名 禁止八进制数字语法 035 要写成0o35
 >
 > 严格模式修复了一些导致JavaScript引擎难以执行优化的缺陷,有时，严格模式可能更快。
 >
@@ -95,10 +96,19 @@ eval(``)
 //反引号 把里面字符串当代码运行
 //  严格模式下 eval单独开作用域 运行完销毁
 
+
+f=eval
+'use strict'
+f('var a = 3') //这里不再严格模式下
+a
+//3 
+
+f('”use strict“;      var a = 3')
+
 var a = 5
   (function () {
     var a = 3
-    eval(`  console.log(a)  `)
+    eval(`  console.log(a)  `) //读了函数调用位置的变量
   }())
 //3
 
@@ -107,8 +117,8 @@ var a = 5
   (function () {
     var a = 3
     var f = eval
-    f(`  console.log(a)  `)
-  }())
+    f(`  console.log(a)  `)  //读了定义位置的变量
+  }())   
   //5
 
 
@@ -120,7 +130,8 @@ var a = 5
 //evl 动态作用域
 ```
 
-* 严格模式不能删除变量声明 delete name
+* 严格模式不能删除变量声明  let x ； delete x 错误
+* 严格模式下 eval 和arguments 不能通过程序语法被绑定 或赋值
 
 ```javascript
 function f(a, b) {
@@ -132,8 +143,8 @@ function f(a, b) {
 f(1, 2)
 //3
 //严格模式下是 1  改a 不影响 arguments[1]
-
-//不在支持arguments.callee 指向正在运行的函数
+ 
+//不在支持arguments.callee 指向正在运行的函数 匿名函数可以拿到自己
 function f() {
   arguments.callee === f
 }
@@ -146,6 +157,12 @@ function f() {
 function f() {
   console.log(f.caller)  //谁调用的f()
 }
+```
+
+> 严格模式下this不会被转换为一个对象
+
+```javascript
+f.call(1) //this Numebr(1)
 ```
 
 #### Testing
@@ -221,7 +238,7 @@ try {
 } finally {
   console.log(6)
 }
-
+//6
 
 function f() {
   try {
@@ -231,6 +248,20 @@ function f() {
   }
 }
 //9 finally的代码一定会执行
+
+function foo(){
+  console.log(2)
+  bar()
+  console.log(3)
+}
+
+function bar(){
+  throw 5
+}
+
+foo()
+//2
+//uncaught 5
 
 function f() {
   try {
@@ -258,9 +289,33 @@ try {
 } catch (e) {
   console.dir(e)
 }
+//SyntaxError: Unexpected token '}'at <anonymous>:2:3
 ```
 
+* 错误是冒泡的
+
+```javascript
+isNaN('foo')
+//true
+isNaN({})
+//true 不是数字
+isNaN(NaN)
+//true
+Number.isNaN(NaN) //true 是否是NaN
+```
+
+
+
 ###  error 对象 message属性
+
+```javascript
+console.dir(new Error('oiwejf'))
+// Error: oiwejf
+// at<anonymous>: 1: 13
+// message: "oiwejf"
+// stack: "Error: oiwejf↵    at <anonymous>:1:13"
+// __proto__: Object
+```
 
 ```javascript
 function f() {
@@ -297,7 +352,7 @@ function d() {
 //c函数
 ```
 
-### cleaning up after exception
+### cleaning up after exception 用finally
 
 ```javascript
 var context = null
@@ -323,12 +378,12 @@ try {
 } finally {
   context = oldContext
   return result
-} //result 覆盖报错
+} //result 覆盖报错 坑点
 
 try {
   return body()
 } finally {
-  context = oldContext
+  context = oldContext //这样才会报错
 }
 
 
@@ -365,7 +420,7 @@ try {
 class InputError extends Error {
   constructor(msg) {
     super(msg)
-  }//class不能增加属性 方案，增加表现为属性的方法
+  }//class不能增加属性 方案，增加表现为属性的方法  InputError.prototype.name = 'InputError'
   get name() {
     return `InputError `
   }
@@ -386,6 +441,8 @@ ie = new InputError('fowefj')
 
 #### Assertions 断言
 
+> 断言如果ok donothing 不ok直接抛错
+
 ```javascript
 function AssertionFailed(message) {
   this.message = message
@@ -396,6 +453,19 @@ function assert(test, message) {
   if (!test)
     throw new AssertionFailed(message)
 }
+
+function lastElement(array) {
+  assert(array.length > 0, "empty array in lastElement")
+  return array[array.length - 1]
+}
+```
+
+```javascript
+try{
+  
+}catch(e){
+  //e只能这里访问到 外面访问不到
+}
 ```
 
 ```javascript
@@ -404,14 +474,14 @@ const INTERNET_CONNECTION_FAILED = 10035
 
 new Array(10).map(it => Math.random() * 10 | 0)
 //返回十个空empty
-//mpa reduce 方法自动跳过稀疏项
+//map reduce 方法自动跳过稀疏项
 
 new Array(10)
 //(10)[empty × 10]
 
 new Array(10).fill(0).map(it => Math.random() * 10 | 0)
 
-//lodash 返回非稀疏 全变成undefined
+//lodash 返回非稀疏 empty全变成undefined
 ```
 
 

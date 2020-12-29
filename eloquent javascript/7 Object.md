@@ -1,4 +1,4 @@
-# The Secret Life of Objects
+#  The Secret Life of Objects
 
 ## 方法
 
@@ -313,13 +313,13 @@ console.log(obj.x)
 
 ```javascript
 ary = [] 
-ary._proto_ === Array.prototype   //ary的原型 恰好被Array的prototype属性指向而已
+ary.__proto__ === Array.prototype   //ary的原型 恰好被Array的prototype属性指向而已
 x =2
-x._proto_ === Number.prototype
+x.__proto__ === Number.prototype
 x = 'fdas'
-x._proto_ === String.prototype
+x.__proto__ === String.prototype
 ary.push === Array.prototype.push
-ary._proto_.push === Array.prototype.push
+ary.__proto__.push === Array.prototype.push
 ```
 
 ```javascript
@@ -336,15 +336,22 @@ String.prototype.toString == Object.prototype.toString
 delete String.prototype.toString   //删除String的toString属性
 'adsf'.toStirng === Object.prototype.toString
 //删除后为true 
-'FAS'.toStirng()
+'FAS'.toString()
 //"[object String]"
-odjToString = Object.prototype.toString
+
+'a'.__proto__.__proto__.toString()
+//这里this是Object.prototype
+
+
+objToString = Object.prototype.toString
 
 //调用Object.prototype的toString方法 
 objoString.call('a')
 //"[object String]"
 Object.prototype.toString.call('c')
 //"[object String]"
+
+
 ```
 
 ![image-20200611142552000](7%20Object.assets/image-20200611142552000.png)
@@ -1020,7 +1027,7 @@ var c = new TreeNode(3)
 Object.prototype.forOwn = function (action) {
   var hasOwn = Object.prototype.hasOwnProperty
   for (var key in this) {
-    if (this.hasOwnProperty.call(this, key)) {
+    if (hasOwn.call(this, key)) {
       action(this[key], key, this)
     }
   }

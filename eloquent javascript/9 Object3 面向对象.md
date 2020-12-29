@@ -59,9 +59,7 @@ function slice(ary, start = 0, end = ary.length) {  //length属性
 }
 ```
 
-* 把方法挂在对象属性上  别的属性表示可能变化内容 影响该方法的计算结果 但该方法不会重新计算。
-
-
+* 把方法的调用挂在对象属性上  别的属性表示可能变化内容 影响该方法的计算结果 但该方法不会重新计算。 
 
 #### 新声明对象 get 和 set
 
@@ -72,7 +70,7 @@ var obj = {
   get fullName() {
     return this.firstName + ' ' + this.lastName
   },
-  set fullName() {
+  set fullName(val) {
     var ary = val.split(' ')
     this.firstName = ary[0]
     this.LastName = ary[1]
@@ -90,7 +88,7 @@ obj.fullName = 'foo bar'
 var obj ={}
 Object.defineProperty(obj, 'foo', {
   get: function () { },
-  set: function (val) { } //可以不写参数
+  set: function (val) { } //可以不写参数 对象直接量必须写参数
 })
 obj.foo
 obj.foo = 999
@@ -125,6 +123,7 @@ var getProp = (function () {
 getProp('a')
 //1
 ``
+//getter 访问一个属性可以访问对象本身 getter里的this
 //要求 调用getProp得到obj对象
 Object.defineProperty(Object.prototype, 'getSelf', {
   get: function () { return this }
@@ -146,7 +145,7 @@ var obj = {
 
 obj.val
 //读不到3  obj.val 进入 get val() => this.val this是object 无限递归
-//属性做get和set 必须是普通属性 val全替换成_val
+//一个属性是普通属性就不能是getter setter属性 val全替换成_val
 
 //对象的属性是函数 可以把:function 省去
 var obj = {
@@ -192,7 +191,9 @@ function RTextCell(text) {
 
 RTextCell.prototype = Object.create(TextCell.prototype)
 //rtc的prototype 等于一个以tc为原型的新的对象
-//rtc的_pro_ 变成了textcell
+//RTextCell的实例 以{__proto__:TextCell.prototype}为原型
+//RTextCell prototype 以 TextCell.prototype为原型
+
 RTextCell.prototype.draw = function (width, height) {
   var result = []
   for (var i = 0; i < height; i++) {
@@ -242,7 +243,7 @@ Dog.prototype.__proto__ = Creature.prototype
 
 ```javascript
 Object.prototype.toString.call(new TreeNode)
-//[object Object]
+//[object Object] 只能判断内置属性
 
 //instance of  operator
 //想要知道一个函数是不是某个构造函数的实例
@@ -260,14 +261,14 @@ new Number(2) instanceof Number
 //true
 
 Object(2)
-Number(2)
+//Number(2)
 Object(2) instanceof Number
 //true
 Object(2) instanceof Object
-//true
+//true js所有东西都是对象 
 
 Function instanceof Function
-//函数的构造函数     function类型
+//函数的构造函数     function类型 true
 Object instanceof Function
 // true
 Object instanceof Object
@@ -281,8 +282,8 @@ obj instanceof Object
 //false
 // instanceof 顺着原型链找
 
-// [] instanceif Array true
-// [].__proto__.constructor === Array
+// [] instanceof Array true
+// 因为[].__proto__.constructor === Array
 // [].__proto__.__proto__.constructor === Object
 function INSTANCEOF(obj, Cont) {
   while (obj) {
@@ -325,13 +326,14 @@ function INSTANCEOF(obj, Cont) {
 ```java
 new Cont(...args)
 NEW(Cont, ...args)
+//不使用new
 
 function NEW(Cont, ...args) {
   var obj = Object.create(Cont.prototype)
   var ret = Cont.call(obj, ...args)
-  if (ret && typeof ret === 'object') { //ret防止typeof null
+  if (ret && typeof ret === 'object') { //ret防止typeof null 也== ‘object' 若果构造函数的this指向的返回对象
     return ret
-  } else {
+  } else { //构造函数没有返回对象
     return obj
   }//构造函数返回对象 如果不是对象 返回new对象
 
@@ -347,7 +349,8 @@ function NEW(Cont, ...args) {
     this.left = this.right = null
   }
 
-  var node = TreeNode(3)
+  var node = TreeNode(3) 
+  //不写new
   var node = TreeNode.call(new TreeNode(2))
   //this 是new TreeNode(2) 会把新创建的对象的left right val重置
 
@@ -365,6 +368,7 @@ function NEW(Cont, ...args) {
 ```javascript
 s = new Set([1, 2, 2, 3, 4])
 //只能接数组
+set.add() set.size set.has() set.delete()
 Math.max(...ary)
 //接数
 
@@ -388,10 +392,10 @@ function Set(init = []) {
     return new Set(...Array.from(arguments))
   }
   this.elements = []
-  this.initialize()
+  this.initialize(init)
 }
 
-Set.prototype.initialize = function () {
+Set.prototype.initialize = function (init) {
   if (Array.isArray(init)) {
     for (var i = 0; i < init.length; ++i) {
       this.add(init[i])
@@ -431,20 +435,22 @@ while (iterator.hasNext()) {
 ```javascript
 function MySet() {
   var elements = []
+  //没有挂到this上 函数外的方法访问不了
+  //把方法全写在构造函数里面
   this.add = (value) => {
     if (!this.has(value)) {
       elements.push(value)
     }
   }
   this.has = (value) => {
-    return elements.includes(values)
+    return elements.includes(value)
   }
-}
-Object.defineProperty(this, 'size', {
+  Object.defineProperty(this, 'size', {
   get: function () {
     return elements.length
   }
 })
+}
 ```
 
 ```javascript
@@ -467,6 +473,8 @@ var Person = (function () {
 }())
 
 var p = new Person('zs', 18)
+p
+//{'zs',18}
 p = null //缺陷 p = null  不想用p了 但p没有销毁 在map里面 map不销毁 因为person没销毁 Person不销毁
 
 p.destroy()
@@ -483,7 +491,7 @@ b = null
 //WeakMap 没有size 不可数 随时可能被删掉
 ```
 
-#### class语法介绍
+#### class语法介绍  
 
 ```javascript
 class TreeNode extends Node {
@@ -491,7 +499,7 @@ class TreeNode extends Node {
   static from() { }
   static isTreeNode() { }
   constructor(val) {
-    super(val)
+    super(val)       //必须先super 后this
     this.left = null
     this.right = null
   }
@@ -504,6 +512,7 @@ class TreeNode extends Node {
 }
 
 TreeNode.of
+//这样方法不可枚举
 ```
 
 ```javascript
@@ -514,7 +523,7 @@ class TextCell {
   constructor(text) {
     this.lines = text.split('\n')
   }
-  get minWidth() { //TextCell 原型上的方法
+  get minWidth() { //TextCell 原型属性上的方法
     return Math.max(...this.lines.map(it => it.length))
   }
   get minHeight() {
@@ -547,7 +556,7 @@ class UnderlinedTextCell extends TextCell {
 UnderlinedTextCell.prototype.__proto__ === TextCell.prototype
 //true
 UnderlinedTextCell.__proto__ === TextCell
-//true
+//true  重点
 TextCell.__proto__ === Function.prototype
 //true
 UnderlinedTextCell.create === TextCell.create
@@ -566,11 +575,28 @@ a = new A()
 class A extends B {
   x = 8
   y = 5
-  //不写相当于写了这个
-  constructor(...args) {
-    super(...args)
-  }
+ //继承不写构造函数相当于写了这个
+ // constructor(...args) {
+ //   super(...args)
+ //    this.x = 8
+ //    this.y = 5
+ // }
 }
+
+
+function A() {}
+function B() {}
+B.prototype = Object.create(A.prototype)
+B.__proto__ == A
+//false
+B.prototype.__proto__ == A.prototype
+//true
+class A{}
+class B extends A{}
+B.prototype.__proto__ == A.prototype
+//true
+B.__proto__ == A
+//true
 ```
 
 ```javascript
