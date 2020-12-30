@@ -572,7 +572,7 @@ class A {
 a = new A()
 //A{x:8,y:5} 空构造函数
 
-class A extends B {
+class B extends A {
   x = 8
   y = 5
  //继承不写构造函数相当于写了这个
@@ -591,11 +591,14 @@ B.__proto__ == A
 //false
 B.prototype.__proto__ == A.prototype
 //true
+
 class A{}
 class B extends A{}
 B.prototype.__proto__ == A.prototype
 //true
 B.__proto__ == A
+//true
+A.__proto__ == Function.prototype
 //true
 ```
 

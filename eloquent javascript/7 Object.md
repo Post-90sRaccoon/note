@@ -334,7 +334,7 @@ String.prototype.toString == Object.prototype.toString
 
 
 delete String.prototype.toString   //删除String的toString属性
-'adsf'.toStirng === Object.prototype.toString
+'adsf'.toString === Object.prototype.toString
 //删除后为true 
 'FAS'.toString()
 //"[object String]"

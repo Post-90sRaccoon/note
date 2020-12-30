@@ -486,10 +486,6 @@ new Array(10).fill(0).map(it => Math.random() * 10 | 0)
 
 
 
-
-
-
-
 ### Exercise
 
 #### Retry
@@ -509,6 +505,7 @@ function primitiveMultiply(a, b) {
   }
 }
 
+//基于上面函数返回总是正确的结果
 function multiply(a, b) {
   for (; ;) {
     try {
@@ -537,14 +534,14 @@ var box = {
     return this._content;
   }
 };
-//需要使用私有属性
+
 function withBoxUnlocked(func) {
   box.unlock()
   try {
     var result = func()
     return result
   } finally {
-    box.lock()
+    box.lock() //结算抛出错误也要锁上
   }
 }
 
