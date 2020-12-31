@@ -806,11 +806,11 @@ function f() {
   console.log(this)
 }
 
-f2 = f.bind(f, obj1, 1, 2)
+f2 = f.bind(obj1, 1, 2)
 f2()
 //this是obj1 
 f2.call(obj2)
-//还是obj1
+//还是obj1  f2(){//this f()} f2里面this是obj2 但没用过this 直接调用了f() f的this绑定了obj1
 
 
 function bind(f, thisArg, ...fixedArgs) {
@@ -939,9 +939,9 @@ ary = [1,2,3]
 [3.5].forEach(ary.push.bind(ary))
 //[1,2,3,3,0,Array(2),5,1,Array(2)] 还push了3,5的下标和数组
 
-[3.5].forEach(ary.push,【thisArgOfFirstArgument】)
+[3.5].forEach(ary.push,[thisArgOfFirstArgument])
 //ary.push的this 变成 指定参数
-[3,5].forEach(ary,push,ary)  
+[3,5].forEach(ary.push,ary)  
 //也会push3,5的下标和数组
 
 [3,5].forEach(::ary.push) 
