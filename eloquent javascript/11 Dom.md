@@ -27,6 +27,8 @@ console.log('<\/script>')
 
 ### Trees 语法树
 
+* https://esprima.org/demo/parse.html#
+
 * 浏览器拿到语法树
 * 普通元素 html标签 有子节点
 * 文本结点 注释是叶子结点
@@ -44,7 +46,7 @@ Object.defineProperties()
 obj = Object.freeze({ a: 1, b: 2 })
 //不能增加 不能删除 修改没用
 Object.seal({ a: 1, b: 2 })
-//seal 可以修改属性 不能删除
+//seal 可以修改属性 不能删除 不能增加
 
 Object.preventExtensions({ a: 1, b: 2 })
 //阻止增加属性 可以删除属性
@@ -76,23 +78,6 @@ document.body.lastChild.previousSibling.firstChild
 * 返回node及其内中有没有出现过text
 
 ```javascript
-function talksAbout(node: Node, text: string): boolean {
-  for (let i = 0; i < node.childNodes.length; i++) {
-    let child = node.childNodes[i]
-    if (child.nodeType === document.TEXT_NODE) {
-      if (child.nodeValue.includes(text)) {
-        return true
-      }
-    } else if (child.nodeType === document.ELEMENT_NODE) {
-      if(talksAbout(child, text)){
-        return true
-      }
-    }
-  }
-  return false
-} 
-
-
 function talksAbout(node, string) {
   if (node.nodeType == document.ELEMENT_NODE) {
     for (var i = 0; i < node.childNodes.length; i++) {
@@ -180,6 +165,7 @@ insertBefore(newNode, baseNode) //在...之前插入子节点
                                 //baseNode 必须是调用者的子节点
 replaceChild(newNode, oldNode) //oldNode必须是调用结点的子节点
 prepend('string', document.createElement('span'))
+//添加string文本和span标签
 //在调用节点的第一个子节点之前插入一系列Node对象或者DOMString对象。DOMString会被当作Text节点对待（也就是说插入的不是HTML代码）
 ```
 
@@ -192,6 +178,7 @@ prepend('string', document.createElement('span'))
     var ph = document.body.getElementsByTagName('p')
     document.body.insertBefore(ph[2], ph[0])
 </script>
+//Three One Two 
 ```
 
 * 一个结点在文档中只能出现一次，不能在两个地方同时出现。Three One Two
@@ -199,9 +186,12 @@ prepend('string', document.createElement('span'))
 ### Create nodes
 
 ```html
- < p > The < img src = " img/cat.png" alt = " Cat" > in the
-    < img src = " img/hat.png" alt = " Hat " >.</p >
-  <p>< button onclick=" replaceImages ()"> Replace </ button ></p>
+ <p> The <img src=" img/cat.png" alt=" Cat"> in the
+    <img src=" img/hat.png" alt=" Hat ">.
+  </p>
+  <p>
+    <button onclick=" replaceImages ()"> Replace </button>
+  </p>
 
 <script>
   var imgs = document.getElementsByTagName('img') //返回动态集合 一开始length为2 for循环替换掉一个后 length变为一
@@ -211,7 +201,7 @@ for (var i = 0; i < imgs.length; i++) {
   var textNode = document.createTextNode(img.alt)
   img.parentNode.replaceChild(textNode, img)
 }
-document.createTextNode('创建文本结点'
+document.createTextNode('创建文本结点')
 </script>
 
 

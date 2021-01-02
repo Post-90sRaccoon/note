@@ -558,6 +558,17 @@ withClose(open('a.txt'), open('b.txt'), (a, b) => { })
 ```
 
 ```javascript
+// 实现it函数使以上函数调用输出以下格式的文本
+
+// lskjfowie
+//   owiejf
+//     oiwejfw
+//   oweijf
+//     jwoeifj
+
+// function it(message,action){
+
+// }
 var d = 0
 it('lskjfowie', () => {
   it('owiejf', () => {
@@ -575,10 +586,11 @@ it('lskjfowie', () => {
 
 function it(str, f) {
   d++
-  console.log(' '.repeat(d * 2) + str)
+  console.log(' '.repeat(d * 2 - 2) + str)
   f()
   d--
 }
+//递归调用 但不是调用自己 通过别的函数调用自己 所以无法通过参数记录递归深度 所以我们自己定义参数记录递归深度
 
 //lskjfowie
 //  owiejf
@@ -594,7 +606,7 @@ function it(str, f) {
   `foo ${`foo`} bar` //可以嵌套
 
 a`abc${3 * 2}de${5}f` //调用f
-//arg  Array(3) (abc,de,f) 6 5
+//args= [Array(3),6,5] (abc,de,f) 6 5
 a`abc${3 * 2}de${5}f${null}`
 //arg  Array(4) (abc,de,f,'') 6 5 null
 a`${3 * 2}de${5}f${null}`
@@ -612,7 +624,7 @@ function f(parts, ...interpolations) {
 
 
 function f(parts, ...interpolations) {
-  return parts.reduce((result, part) => {
+  return parts.reduce((result, part, i) => {
     return result + interpolations[i - 1] + part  //start = 1
   })
 }
