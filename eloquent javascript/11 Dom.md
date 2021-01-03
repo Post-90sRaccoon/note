@@ -238,13 +238,13 @@ function replaceImages() {
 var arrayish = { 0: "one", 1: "two", length: 2 };
 var real = Array.prototype.slice.call(arrayish, 0); //转化成数组
 console.log(arrayish.length)
-//2
+//2 根据arrayish里面的length来的 如果改为3 real=[one,two,empty]
 real.forEach(function (elt) { console.log(elt); });
 // one two
 
 Array.prototype.slice = function (start = 0, end = this.length) {
   var result = []
-  for (var i = start; i < end; i++) {
+  for (let i = start; i < end; i++) {
     result.push(this[i])
   }
   return result
@@ -255,6 +255,9 @@ Array.prototype.slice = function (start = 0, end = this.length) {
 
 ```javascript
 div = document.createElement('div')
+//createElement 不能增加属性 孩子之类
+
+//elt('div','lorem',elt('span'))
 
 function elt(tagName, attrs, ...children) {
   var node = document.createElement(tagName)
@@ -275,134 +278,111 @@ function elt(tagName, attrs, ...children) {
 }
 ```
 
-### 解析器
+### JSON解析器
 
 ```javascript
-var i = 0 //指向当前正在解析的值
-function parseValue() {
-  if (str[i] === '[') {
-    return parseArray()
-  }
-  if (str[i] === '{') {
-    return parseObject()
-  }
-  if (str[i] === '"') {
-    return parseString()
-  }
-  if (str[i] === 't') {
-    return parseTrue()
-  }
-  if (str[i] === 'f') {
-    return parseFalse()
-  }
-  if (str[i] === 'n') {
-    return parseNull()
-  }
-  return parseNumber()  //不考虑传入的值有错有错 没有任何额外空白 剩下的都是数
-}
-
-// function parseArray() {
-//   //[1,"foo",true]
-//   //[]
-//   var result = []
-//   i++//skip'['
-//   while (str[i] !== '] ') {
-//     if (str[i] === ']') {
-//       i++//skip']'
-//       return result
-//     } else if (str[i] === ',') {
-//       i++ //skip ','
-//     }
-//     var value = parseValue()
-//     result.push(value)
-//   }
-// }
-
-
-//递归下降
-function parseArray() {
-  var result = []
-  i++
-  while (str[i] !== '] ') {
-    var value = parseValue()
-    result.push(value)
-    if (str[i] === ',') {
-      i++
-    }
-  }
-  i++ //skip ']'
-  return result
-}
-
-//此时i指向"
-function parseString() {
-  i++
-  var pos = i
-  while (str[pos] !== '"') {
-    pos++
-  }
-  var result = str.slice(i, pos)
-  i = ++pos
-  return result
-}
-
-function parseObject() {
-  i++
-  var result = {}
-  while (str[i] !== '}') {
-    var key = parseString()
-    i++ //skip :
-    var value = parseValue()
-
-    result[key] = value
-    if (str[i] === ',') {
-      i++
-    }
-  }
-  i++
-  return result
-}
-
-function parseTrue() {
-  i += 4
-  return true
-}
-
-function parseFalse() {
-  i += 5
-  return false
-}
-function parseNull() {
-  i += 4
-  return null
-}
-function parsseNumber() {
-  //-353.43e-305
-  //.3
-  //.3e5
-  var numStr = ''
-  while (isNumberDight(str[i])) {
-    numStr += str[i++]
-  }
-  return parseInt(numStr)
-}
-
-function isNumberDight(c) {
-  var code = c.charCodeAt(0)
-  var code0 = '0'.charCodeAt(0)
-  var code9 = '9'.charCodeAt(0)
-  return code >= code0 && code <= code9
-}
-
 var str = '[111,222,{"a":3},{"b":true,"c":"fooobar","d":[1,false,[null,4,{"x":1,"y":2}]]}]'
 
-function ParseJSON(str) {
-  i = 0
-  return parseValue()
-}
 
-var data = ParseJSON(str)
+let parseJSON = (function () {
+  let i = 0 //指向当前正在解析的值
+  let str
+  //递归下降 ','都是在数组和对象里出现的 所以交给他们处理
 
+  return function parseJSON(input) {
+    str = input
+    return parseValue()
+  }
+  function parseValue() {
+    if (str[i] === '[') {
+      return parseArray()
+    }
+    if (str[i] === '{') {
+      return parseObject()
+    }
+    if (str[i] === '"') {
+      return parseString()
+    }
+    if (str[i] === 't') {
+      return parseTrue()
+    }
+    if (str[i] === 'f') {
+      return parseFalse()
+    }
+    if (str[i] === 'n') {
+      return parseNull()
+    }
+    return parseNumber() //不考虑传入的值有错有错 没有任何额外空白 剩下的都是数
+  }
+
+  function parseArray() {
+    let result = []
+    i++
+    while (str[i] !== ']') {
+      result.push(parseValue())
+      if (str[i] === ',') {
+        i++
+      }
+    }
+    i++
+    return result
+  }
+
+  function parseObject() {
+    let obj = {}
+    i++
+    while (str[i] !== '}') {
+      let key = parseString()
+      i++ //skip :
+      let value = parseValue()
+      obj[key] = value
+      if (str[i] === ',') {
+        i++
+      }
+    }
+    i++
+    return obj
+  }
+
+  function parseString() {
+    let result = ''
+    i++
+    while (str[i] !== '"') {
+      result += str[i++]
+    }
+    i++
+    return result
+  }
+
+  function parseNumber() {
+    let result = ''
+    while (isNumDigit(str[i])) {
+      result += str[i++]
+    }
+    return parseInt(result)
+  }
+
+  function isNumDigit(char) {
+    let code = char.charCodeAt(0)
+    let char0 = '0'.charCodeAt(0)
+    let char9 = '9'.charCodeAt(0)
+    return code >= char0 && code <= char9
+  }
+
+  function parseTrue() {
+    i += 4
+    return true
+  }
+  function parseFalse() {
+    i += 5
+    return false
+  }
+  function parseNull() {
+    i += 4
+    return null
+  }
+
+})()
 
 
 //"3+(2*5)" 树
@@ -421,6 +401,8 @@ function calc(root) {
 
 #### 回顾
 
+* document.write 和document.createElement的区别
+
 ```javascript
 document.write('<span></span>')
 //解析流里写入字符串 解析结束后（</html>）再写无意义 。 解析完成后再write就会重新开启一个解析流，相当于把DOM树中的所有内容冲掉。会重新开启一个解析流。
@@ -433,6 +415,8 @@ document.open()
 document.createElement('span')
 //创建出DOM对象.创建之初不在DOM树里的，需要添加到DOM树里才能显示出来 不会因为创建或添加而影响DOM树的其他部分。
 ```
+
+* 类数组
 
 ![image-20200624170229487](11%20Dom.assets/image-20200624170229487.png)
 
@@ -481,8 +465,8 @@ aryLike instanceof Array
 .src
 .alt
 .className
-.htmlFor
-.classList
+.htmlFor  //label 里面的for
+.classList //有多个类名
 .classList.add
 .classList.remove
 
@@ -508,8 +492,7 @@ aryLike instanceof Array
     if (para.getAttribute("data-classified") == "secret")
       para.parentNode.removeChild(para);
   })
-  //类数组不能直接使用forEach方法
-  //可以用node.dataset.fooBar访问data-foo-bar属性  
+  //类数组不能直接使用forEach方法 原型不是Array.prototype 所以找不到forEach 
 </script>
 
 </html>
@@ -538,7 +521,9 @@ aryLike instanceof Array
   $0.innerText
   //返回的形态受css影响
   // $0.textContent返回的结点文字内容不受css影响，完全是由所有文本结点的内容拼接而成
-  // $0.innerText返回的内容受css影响，如多个空格及回车会被合并成一个空格
+  // $0.innerText返回的内容受css影响，会触发回流，如多个空格及回车会被合并成一个空格
+  
+//https://www.zhangxinxu.com/wordpress/2019/09/js-dom-innertext-textcontent/
 </script>
 ```
 
@@ -570,16 +555,17 @@ offsetHeight
 //元素占用的像素
 clientWidth
 clientHeight
-//忽略border及以外的像素
+//忽略border及以外的像素 也就是padding box
 
 
 //获取位置
-getBoundingClientRect 
-//返回一个位置 top bottom left right 距离左上角的位置
+getBoundingClientRect() 
+//返回一个DOMReact对象 top bottom left right x(right-left) y(bottom-top)距离左上角的位置 
 
-
-getClientRects 
-//拿到生成的两个矩形
+//<p><span></span></p>
+getClientRects() 
+//拿到生成的多个矩形盒子  
+//Element.getClientRects() 方法返回一个指向客户端中每一个盒子的边界矩形的矩形集合
 
 
 pageXOffset
@@ -589,7 +575,7 @@ pageYOffset
 window.scrollX
 window.scrollY
 
-window.scrollBy(50,100) //滚动
+window.scrollBy(50,100) //滚动多少个像素
 window.scrollTo(100,100)//滚动到
 
 window.innerHeight
