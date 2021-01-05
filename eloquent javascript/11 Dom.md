@@ -291,6 +291,7 @@ let parseJSON = (function () {
 
   return function parseJSON(input) {
     str = input
+    i = 0 //每次调用都把i置为0
     return parseValue()
   }
   function parseValue() {
@@ -568,8 +569,8 @@ getClientRects()
 //Element.getClientRects() 方法返回一个指向客户端中每一个盒子的边界矩形的矩形集合
 
 
-pageXOffset
-pageYOffset
+window.pageXOffset
+window.pageYOffset
 //获得滚动的位置 可以赋值 但页面不会随之滚动
 
 window.scrollX
@@ -607,7 +608,7 @@ document.all[id] 取到特定id的元素
 document.createElement('div')
 document.createTextNode('foobar')
 el.appendChild(node)
-el.append(...nodes)
+el.append(...nodes) //支持文本
 el.prepend(...nodes)
 el.removeChild(child)
 el.insertBefore(newNode, child)
@@ -708,7 +709,7 @@ window.innerWidth / Height窗口内部宽高（css像素）
 </html>
 ```
 
-```javascript
+```html
 <!DOCTYPE html>
 <html lang="en">
 
@@ -741,11 +742,13 @@ window.innerWidth / Height窗口内部宽高（css像素）
     for (var i = 5; i < total; i++)
       target.appendChild(document.createTextNode("X"))
   })//1ms
+  //计算一个x的宽度 不用重复计算布局快
 </script>
 
 </html>
-
 ```
+
+* node.normalize()
 
 ```javascript
 // $0.normalize() //把元素里连续子文本结点合并成一个
@@ -777,7 +780,7 @@ function normalize(node) {
 ### Query selectors
 
 ```javascript
-document.querySelectorAll('div p')
+document.querySelectorAll('div p') //根据css选择器 选择元素
 
 返回selectAll的第一个元素
 function querySelector(selector){
@@ -785,8 +788,8 @@ function querySelector(selector){
 }
 
 //简写 只有浏览器能用
-$()  select
-$$() selectAll
+$('div p')  select
+$$('div p') selectAll
 ```
 
 1.选择器是在全局范围内match
@@ -798,6 +801,8 @@ $$() selectAll
 4.返回静态集合，不会动态更新
 
 5.返回后代元素 不包括自己 
+
+#### 语法树 
 
 ```javascript
 var expr = '|(&(t,f,t),!(t))'
@@ -994,12 +999,16 @@ function parseNot() {
       cat.style.left = Math.cos(angle) * 200 + 'px'
       requestAnimationFrame(animate)
     }
-    requestAnimationFrame(animate) //让一个函数在未来某个时间点执行
+    requestAnimationFrame(animate) //让一个函数在未来某个时间点(下一帧之前)执行
   </script>
 </body>
 
 </html>
 ```
+
+> $0.style.xxx  内联样式
+>
+> window.getComputedStyle()  获取计算样式
 
 ### DOM 补充
 
