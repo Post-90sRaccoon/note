@@ -51,6 +51,7 @@ a.foo = 8
 if (a == 1 && a == 2 && a == 3) {
   console.log(true)
 }
+//有无可能让上面if条件成立 a是getter就可以了 第一调用返回1 第二次返回2
 
 var i = 1
 Object.defineProperty(window, 'a', {
@@ -126,6 +127,14 @@ var button = document.querySelector("button")
 //mousedown(按下去不松手) click
 ```
 
+> event 对象属性
+>
+> altKey boolean 是否同时按下alt
+>
+> ctrlKey
+>
+> detail  连续快速点击中的第几次
+
 * 早期版本IE浏览器不会以参数形式传 而是在时间发生的过程中将事件对象存储在一个名为event的全局变量中。运行过程中有events，运行结束销毁
 
 ```javascript
@@ -172,7 +181,7 @@ var button = document.querySelector("button")
 
 * **offsetX/offsetY:**获取到是触发点相对被触发dom的左上角距离，不过左上角基准点在不同浏览器中有区别，其中在IE中以内容区左上角为基准点不包括边框，如果触发点在边框上会返回负值，而chrome中以边框左上角为基准点。
 
-  ![图片描述](13%20Handing%20Events.assets/bVXWPA)
+  ![a](13%20Handing%20Events.assets/a.png)
 
   
 
@@ -191,7 +200,8 @@ var button = document.querySelector("button")
     button.addEventListener('dblclick', function (e) {
       console.log(2)
     })
-//双击打印1 1 2
+//双击打印1 1 2 不会两个函数同时运行
+//第一下 第一个click运行 第二下点击 第一个click运行完毕 发现第二个点击 运行第二个click 结束后运行dblclick
 ```
 
 ### Propagation

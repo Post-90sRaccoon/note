@@ -1251,7 +1251,7 @@ function bind(f, ...fixedArgs) {
         newArgs[i] = args[index++]
       }
     }
-    if (index < args.length) {
+    while (index < args.length) {
       newArgs.push(args[index++])
     }
     return f.apply(this , newArgs)
