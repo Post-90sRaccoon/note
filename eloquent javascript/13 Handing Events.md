@@ -263,7 +263,7 @@ p.addEventListener('click', (e) => {
     })
 ```
 
-#### a和里面的button互不干扰
+#### 让a和里面的button互不干扰
 
 ```html
 <a href="https://www.jd.com" target="_blank">foo <button class="btn-in-a">btn</button>bar</a>
@@ -274,7 +274,7 @@ p.addEventListener('click', (e) => {
     var a = document.querySelector('a')
 
     a.addEventListener('click', function (e) {
-      console.log('a click')
+      console.log('a click')//点击不会打印a click 但会因为默认行为打开jd
     })
 
 
@@ -284,13 +284,12 @@ p.addEventListener('click', (e) => {
       e.preventDefault()
       //阻止默认行为
     })
-  </script>
 ```
 
 * 大多数事件对象的target属性指向了事件发生时最原始发生的元素。
-* 事件代理 事件委托 Event Delegate
 
 ```html
+<!-- 只想处理里面class为foo的元素被点击 -->
 <div>
     <form action="">
       <div>
@@ -311,10 +310,15 @@ var form = document.querySelector('form')
       if (e.target.classList.contains('foo')) {
         console.log('INPUT IN ME is clicked')
       }
-      if (e.target.matches(selector)) {//selector 选择器}
+      if (e.target.matches('form input.foo')) {//matches 参数为selector 选择器}
       }
     })
+```
 
+* 事件代理 事件委托 Event Delegate  事件绑定在公共父元素  通过e.target判断来源
+
+```javascript
+//实现jQuery的委托函数 node.on(eventName,target,handler)
 
  Element.prototype.on = function (eventName, selector, handler) {
       this.addEventListener(eventName, function (e) {
@@ -422,6 +426,7 @@ var button = document.querySelector('button')
 // button click capture           目标阶段  按照绑定顺序 不区分捕获 冒泡  
 // div click non capture          冒泡阶段
 // body click non capture         冒泡阶段
+//stopPorpagation 也能阻止向下捕获
 ```
 
 ### Default actions

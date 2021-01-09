@@ -1014,8 +1014,14 @@ function parseNot() {
 
 ![image-20200630201754172](11%20Dom.assets/image-20200630201754172.png)
 
-* innerText和outerText 相同
-* outerHTML 会把当前元素替换成他的值
+* innerText和outerText 相同 当做文本 不会当成html
+* outerHTML  包含标签自身  innerHtml 子html  都是getter和setter
+* outerHtml可以直接赋值
+
+```javascript
+innerHTMLDescriptor = Object.getOwnPropertyDescriptor(HTMLElement.prototype.__proto__,   'innerHTML')
+innerHTMLDescriptor.get.call($0)
+```
 
 ```javascript
 function getOuterHTML(node) {
@@ -1069,11 +1075,8 @@ function JSONStringify(value) {
         }
         result = result.slice(0, -1) //去掉最后一个逗号
         result += '}'
-        return result
       }
+    return result
     }
 ```
 
-### Exercise
-
-#### Build a table
