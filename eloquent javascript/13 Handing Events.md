@@ -452,8 +452,10 @@ var button = document.querySelector('button')
   window.onbeforeunload = function(){
   return '马保国'
   }
+  //页面关闭前
+window.open('https://www.jd.com/')
   ```
-
+  
   
 
 ### Key events
@@ -548,7 +550,7 @@ var button = document.querySelector('button')
 </html>
 ```
 
-```javascript
+```html
 <!DOCTYPE html>
 <html lang="en">
 
@@ -605,11 +607,6 @@ var button = document.querySelector('button')
           break
       }
     })
-
-    window.addEventListener('keyup', e => {
-
-    })
-
   </script>
 </body>
 
@@ -618,7 +615,7 @@ var button = document.querySelector('button')
 
 #### 键盘无冲
 
-```javascript
+```html
 <!DOCTYPE html>
 <html lang="en">
 
@@ -712,13 +709,13 @@ var button = document.querySelector('button')
  ```
 
 ```javascript
-    //在keydown之后触发  按字母时触发
+    //在keydown之后触发  按产生字符的键才能触发
     window.addEventListener('keypress', e => {
       console.log(String.fromCharCode(e.charCode))
     })
 ```
 
-* 被focus才能触发键盘事件。没有focus，键盘事件在body上触发。
+* 被focus才能触发键盘事件。没有任何focus，键盘事件在document.body上触发。
 
 ### Mouse clicks
 
