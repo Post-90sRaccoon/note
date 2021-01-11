@@ -807,9 +807,9 @@ var draw//draw必须声明在外面 不然remove读取不到draw
     })
 ```
 
-### Mouse motion
+#### Mouse motion
 
-```javascript
+```html
 <!DOCTYPE html>
 <html lang="en">
 
@@ -831,7 +831,7 @@ var draw//draw必须声明在外面 不然remove读取不到draw
       if (e.which == 1) {
         lastX = e.pageX
         addEventListener('mousemove', moved)
-        e.preventDefault()
+        e.preventDefault()//鼠标拖动默认行为 选中文字
       }
     })
 
@@ -859,8 +859,69 @@ var draw//draw必须声明在外面 不然remove读取不到draw
 ```
 
 * which  最后按下的键位
+* buttons   0 0 0 三位二进制数 代表 中 右 左  这样可以支持同时按鼠标左中右键 4 2 1 通过或运算判断
 
-* buttons   0 0 0 三位 代表 中 右 左
+#### 拖拽方块
+
+```html\
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    div {
+      position: absolute;
+      width: 200px;
+      height: 100px;
+    }
+  </style>
+</head>
+
+<body>
+  <div style="background-color:red;left: 0px;top: 0px;z-index: 0;"></div>
+  <div style="background-color:blue;left: 0px;top: 0px;z-index: 0;"></div>
+  <div style="background-color:orange;left: 0px;top: 0px;z-index: 0;"></div>
+  <script>
+    let drag
+    addEventListener('mousedown', (e) => {
+      let target = e.target
+      if (target.tagName == 'DIV') {
+        let lastX = e.pageX
+        let lastY = e.pageY
+        resetZ()
+        target.style["z-index"] = 1
+        addEventListener('mousemove', drag = e => {
+          e.preventDefault()
+          target.style.left = parseInt(target.style.left) + e.pageX - lastX + 'px'
+          target.style.top = parseInt(target.style.top) + e.pageY - lastY + 'px'
+          lastX = e.pageX
+          lastY = e.pageY
+        })
+      }
+    })
+
+    addEventListener('mouseup', (e) => {
+      removeEventListener('mousemove', drag)
+    })
+
+    function resetZ() {
+      let target = document.querySelectorAll('div')
+      let ary = Array.from(target)
+      ary.forEach(it => {
+        it.style["z-index"] = 0
+      })
+    }
+  </script>
+</body>
+<!-- 改进 设置z数组 通过下标定z-index 点击时移动数组 -->
+
+</html>
+```
+
+#### 鼠标移动
 
 ```html
 <div id="div">
