@@ -944,10 +944,10 @@ var draw//draw必须声明在外面 不然remove读取不到draw
 
 #### relatedTarget
 
-* mouseover告诉你鼠标从哪来
-* mouseout  告诉鼠标去了哪 
+* mouseover e.relatedTarget告诉你鼠标从哪来
+* mouseout  e.relatedTarget告诉鼠标去了哪 
 
-```javascript
+```html
 <p>Hover over this <strong>paragraph</strong></p>
   <script>
     var para = document.querySelector("p")
@@ -1014,7 +1014,7 @@ var draw//draw必须声明在外面 不然remove读取不到draw
     var bar = document.querySelector(".progress div ")
     addEventListener("scroll", function () {
       var max = document.body.scrollHeight - innerHeight //页面整体高度 - 窗体高度
-      var percent = (pageYOffset / max) * 100  //pageYOffset 是scroll的别名
+      var percent = (pageYOffset / max) * 100  //pageYOffset 是scrollY的别名
       bar.style.width = percent + "%"
     })
   </script>
@@ -1030,6 +1030,7 @@ var draw//draw必须声明在外面 不然remove读取不到draw
  addEventListener("mousewheel", e => {
       e.preventDefault()
     }, {
+   		useCapture：true  //捕获阶段
       passive: false //可能调用
     })
 ```
@@ -1085,7 +1086,7 @@ var draw//draw必须声明在外面 不然remove读取不到draw
     //   })
     // }
 
-    //事件代理写法
+    //事件代理写法 因为focus和blur不冒泡所以这里不能用
     // document.addEventListener('focusin', e => {
     //   help.textContent = e.target.dataset.help
     // })
@@ -1120,12 +1121,13 @@ var draw//draw必须声明在外面 不然remove读取不到draw
 ```javascript
 // document.addEventListener('readystatechange'){
     //    console.log(document.readyState)
-    //}解析前一个值 解析中一个值 解析后一个值 解析过程触发两次
+    //}文档解析前是一个值 解析中是一个值 解析后又是一个值 解析过程事件触发两次
 
     document.addEventListener('DOMContentLoaded', e => {
       console.log('dom parse complete')
+      //document.querySelector('img').addEventListener()
     })
-    //绑定元素 DOM解析之后 如果绑定元素 不要写在html前面 dom解析之后写 可以卸载上面方法的里面
+    //绑定元素 写在DOM解析之后 如果绑定元素 不要写在html前面 dom解析之后写 也可以写在方法的里面
     // window.onload = function(){
 
     // }
@@ -1134,18 +1136,23 @@ var draw//draw必须声明在外面 不然remove读取不到draw
     })
 ```
 
+#### 延迟script的运行
+
 ```html
 <script>console.log(1)</script>
-  <script src="aaa.js"></script> <!-- 假设aaajs 内容 console.log(2) -->
-  <script>console.log(3)</script>
-  <script src="aaa.js" defer></script> <!-- 不等，向下运行 相对顺序不变 -->
-  <script src="aaa.js" async></script> <!-- 不等，向下运行 相对顺序可能变 谁先加载完成谁先 -->
+<script src="aaa.js"></script> <!-- 假设aaajs 内容 console.log(2) -->
+<script>console.log(3)</script>
+<!--1 2 3-->
+<script src="aaa.js" defer></script> <!-- 不等，向下运行 相对顺序不变 -->
+<script src="aaa.js" async></script> <!-- 不等，向下运行 相对顺序可能变 谁先加载完成谁先 -->
 ```
 
 * 加载外部资源（src ）的都有load事件 a标签没有 资源加载成功后触发
 * 不冒泡 可以捕获
 
-```javascript
+#### 图片渐现
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 
@@ -1191,7 +1198,7 @@ var draw//draw必须声明在外面 不然remove读取不到draw
 ### Setting timers
 
 * setTimeout  设置定时
-* requestAnimationFrame 重新绘制时调用
+* requestAnimationFrame 重新绘制时调用（下一帧）
 
 ```javascript
 setTimeout(function () {
@@ -1222,7 +1229,7 @@ console.log(2)
   a = setTimeout(()=>console.log(2),2000)
   clearTimeout(a)
   
-  cancelAnimationFrame
+  cancelAnimationFrame(id )
   ```
 
 * 间歇性执行函数
@@ -1237,8 +1244,22 @@ setInterval(()=>{
       setTimeout(foo,1000)
     },1000)
 
-clearInterval
+clearInterval(id)
 ```
+
+* setInterval 里面有查了其他任务 执行完立刻补一次 
+
+> 17  39.775  
+>
+> 18  41.775  
+>
+> 死循环  51.917  
+>
+> 19 51.918 
+>
+> 20 53.775
+>
+> 21 55.775 
 
 ### Debouncing
 
