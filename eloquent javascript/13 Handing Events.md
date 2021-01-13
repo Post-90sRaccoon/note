@@ -863,7 +863,77 @@ var draw//draw必须声明在外面 不然remove读取不到draw
 
 #### 拖拽方块
 
-```html\
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <!DOCTYPE html>
+  <html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+      div {
+        position: absolute;
+        width: 200px;
+        height: 100px;
+        user-select:none; /*不会选中 就不需要的阻止默认行为了*/
+      }
+    </style>
+  </head>
+
+  <body>
+    <div style="background-color:red;left: 0px;top: 0px;z-index: 0;"></div>
+    <div style="background-color:blue;left: 0px;top: 0px;z-index: 0;"></div>
+    <div style="background-color:orange;left: 0px;top: 0px;z-index: 0;"></div>
+    <script>
+      let drag
+      let baseZ = 0
+      addEventListener('mousedown', (e) => {
+        let target = e.target
+        if (target.tagName == 'DIV') {
+          let lastX = e.pageX
+          let lastY = e.pageY
+          target.style["z-index"] = baseZ + 1
+          baseZ += 1
+          addEventListener('mousemove', drag = e => {
+            e.preventDefault()
+            target.style.left = parseFloat(target.style.left) + e.pageX - lastX + 'px'
+            target.style.top = parseFloat(target.style.top) + e.pageY - lastY + 'px'
+            lastX = e.pageX
+            lastY = e.pageY
+          })
+        }
+      })
+
+      addEventListener('mouseup', (e) => {
+        removeEventListener('mousemove', drag)
+        if (parseFloat(e.target.style.left) < 200) {
+          e.target.style.left = 0
+        }
+      })
+		//改进 不一定mouseup解绑 mouseup有时候捕获不到 比如拖拽文字松手时 所以在mousemove是解绑mousemove 
+    //判断左键是否按下 如果没按下 解绑
+    </script>
+  </body>
+  </html>
+</body>
+
+</html>
+```
+
+#### 不松手磁吸方块
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 
@@ -872,51 +942,74 @@ var draw//draw必须声明在外面 不然remove读取不到draw
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
   <style>
-    div {
-      position: absolute;
+    .dragRect {
       width: 200px;
-      height: 100px;
+      height: 200px;
+      position: fixed;
     }
   </style>
 </head>
 
 <body>
-  <div style="background-color:red;left: 0px;top: 0px;z-index: 0;"></div>
-  <div style="background-color:blue;left: 0px;top: 0px;z-index: 0;"></div>
-  <div style="background-color:orange;left: 0px;top: 0px;z-index: 0;"></div>
+  <div class="dragRect" style="left: 0;top: 0;background-color:orange;"></div>
+  <div class="dragRect" style="left: 0;top: 0;background-color:red;"></div>
+  <div class="dragRect" style="left: 0;top: 0;background-color:blue;"></div>
+
   <script>
-    let drag
+    let baseZ = 0
+    let startX
+    let startY
+    let elStartX
+    let elStartY
+    let elem
     addEventListener('mousedown', (e) => {
-      let target = e.target
-      if (target.tagName == 'DIV') {
-        let lastX = e.pageX
-        let lastY = e.pageY
-        resetZ()
-        target.style["z-index"] = 1
-        addEventListener('mousemove', drag = e => {
-          e.preventDefault()
-          target.style.left = parseInt(target.style.left) + e.pageX - lastX + 'px'
-          target.style.top = parseInt(target.style.top) + e.pageY - lastY + 'px'
-          lastX = e.pageX
-          lastY = e.pageY
-        })
+      if (e.target.matches('.dragRect')) {
+        elem = e.target
+        elem.style.zIndex = baseZ++
+        if (event.which == 1) {
+          startX = e.pageX
+          startY = e.pageY //鼠标开始位置
+          elStartX = parseFloat(elem.style.left)
+          elStartY = parseFloat(elem.style.top) //元素开始位置
+          addEventListener('mousemove', drag)
+        }
       }
     })
 
-    addEventListener('mouseup', (e) => {
-      removeEventListener('mousemove', drag)
-    })
+    function drag(e) {
+      e.preventDefault()
+      if (e.which == 0) {
+        removeEventListener('mousemove', drag)
+      }
+      let dx = e.pageX - startX
+      let dy = e.pageY - startY
 
-    function resetZ() {
-      let target = document.querySelectorAll('div')
-      let ary = Array.from(target)
-      ary.forEach(it => {
-        it.style["z-index"] = 0
-      })
+      let left = elStartX + dx
+      let top = elStartY + dy
+
+      // target.style.left = parseFloat(target.style.left) + e.pageX - lastX + 'px'
+      // 这样吸住时 parseFloat(target.style.left) 是 0
+      // dx 是很小的值 除非瞬间拉开50px 否则一直吸死
+      // 记录元素初始位置可以慢慢拉
+
+      if (left < 50) {
+        left = 0
+      }
+      if (left > innerWidth - elem.offsetWidth - 50) {
+        left = innerWidth - elem.offsetWidth
+      }
+      if (top < 50) {
+        top = 0
+      }
+      if (top > innerHeight - elem.offsetHeight - 50) {
+        top = innerHeight - elem.offsetHeight
+      }
+
+      elem.style.left = left + 'px'
+      elem.style.top = top + 'px'
     }
   </script>
 </body>
-<!-- 改进 设置z数组 通过下标定z-index 点击时移动数组 -->
 
 </html>
 ```
@@ -1263,7 +1356,7 @@ clearInterval(id)
 
 ### Debouncing
 
-* 有些事件执行多次，如mousemove，scroll。
+* 有些事件频繁执行，如mousemove，scroll。
 
 * 运行JS，解析DOM,计算layout，paint在一个线程里，同一时间只能执行一个。
 
@@ -1310,6 +1403,8 @@ clearInterval(id)
 * 防抖 ： 先不执行，到某时间执行，但某时间之前又要执行，前一次取消，执行这次。
 * 节流：密集执行好多次  降频执行 
 
+>  防抖例子 显示输入文字
+
 ```html
 <!DOCTYPE html>
 <html lang="en">
@@ -1321,8 +1416,7 @@ clearInterval(id)
 </head>
 
 <body>
-  <input type="text">
-  <p>helloa,hellob,helloc,hellod</p>
+  <input type="text"> 
 </body>
 <script>
   var input = document.querySelector('input')
@@ -1342,6 +1436,8 @@ clearInterval(id)
 </html>
 ```
 
+> 节流例子 显示鼠标坐标
+
 ```javascript
  var lastTime = 0
 
@@ -1360,6 +1456,17 @@ clearInterval(id)
 ```
 
 ```javascript
+a = 2
+    setTimeout(() => {
+      console.log(a)
+    }, 5000)
+//先执行上面   
+//中间加上
+a = 5
+//5
+```
+
+```javascript
   function displayCoords(event) {
     document.body.textContent =
       " Mouse at " + event.pageX + ", " + event.pageY
@@ -1367,22 +1474,23 @@ clearInterval(id)
   var scheduled = false
   var lastEvent
   addEventListener("mousemove", function (event) {
-    lastEvent = event
+    lastEvent = event //这行一直都会运行 会拿到最新的事件 mouse停止 才不运行
     if (!scheduled) {
       scheduled = true 
       setTimeout(function () {
         scheduled = false
         displayCoords(lastEvent)
       }, 250)
-    }
+    }//这样会把最后一次安排上 (在停止move前 安排上) 读的lastEvent是最新的e
   })
+//显示最后一次会有延迟 鼠标停下 距离上一次还是要过250ms才能显示
 ```
 
 ```javascript
  window.addEventListener('mousemove', throttle(function (event) {
     document.body.textContent = " Mouse at " + event.pageX + ", " + event.pageY
   }, 250))
-
+//throttle里的this是上面的window window.addEventListener window调用的
 
   function throttle(f, time) {
     var lastEvent = null
@@ -1428,17 +1536,18 @@ function sqrt(num) {
   return Math.sqrt(num)
 }
 
-//另一个文件 http打开
-var worker = new Worker('./worker.js')
-worker.postMessage(5)
+//另一个html文件 http打开 （hs-o）  //环境切换 top改成worker.js
+var worker = new Worker('./worker.js') //创建worker worker里面的代码就执行了
+ worker.postMessage(5)
 worker.addEventListener('message', e => {
   console.log(e.data)
 })
 
+//worker.terminate() 关闭worker
 
-
- var sab = new SharedArrayBuffer(100)
- int8 = new Int8Array(sab)
+//特殊对象 postMessage不是复制 而是把指针拿过去
+ var sab = new SharedArrayBuffer(100) //连续100个字节空间
+ int8 = new Int8Array(sab)  //把这片空间8个比特一个单位来理解
  //js进程共享一片内存
  worker.postMessage(int8)
 ```
@@ -1448,9 +1557,9 @@ worker.addEventListener('message', e => {
 * worker内只有this 没有window
 * 进程与线程区别：不同进程之间不能共享内存。同一个进程的多个线程是可以共享这个进程的内存的。cpu的时间片轮转是以线程为单位
 
-#### 深度克隆
+* postMessage(data) data是 深度克隆
 
-### Setting timers
+
 
 ###补充事件
 
