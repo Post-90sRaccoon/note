@@ -1,16 +1,16 @@
 ```javascript
 var net = require('net')
-var server = net.createServer()
+var server = net.createServer() //创建tcp服务对象
 var port = 5555
 
-server.on('connection', conn => {
+server.on('connection', conn => { //客户端连接成功
   console.log(conn.address(), 'comes in')
 
-  conn.on('data', data => {
-    console.log(data.toString())
+  conn.on('data', data => {        //连接上发来数据时触发的事件及函数
+    console.log(data.toString())   
   })
 
-  conn.write('HTTP/1.1 200 OK\r\n')
+  conn.write('HTTP/1.1 200 OK\r\n')    //向客户端发送
   conn.write('Content-Type: text/html\r\n')
   conn.write('\r\n')
   conn.write(`<h1>
@@ -23,6 +23,10 @@ server.on('connection', conn => {
 server.listen(port, () => {
   console.log('listening on port', port)
 })
+
+
+//客户端 conn = net.connect(5555,'127.0.0.1')
+//conn.write('') conn.on('data',data=>console.log(data.toString())) conn.end
 ```
 
 ![image-20200713171346054](14%20HTTP.assets/image-20200713171346054.png)
