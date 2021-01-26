@@ -4,14 +4,14 @@ var server = net.createServer() //创建tcp服务对象
 var port = 5555
 
 server.on('connection', conn => { //客户端连接成功
-  console.log(conn.address(), 'comes in')
+  console.log(conn.address(), 'comes in') //连接者浏览器写的地址
 
   conn.on('data', data => {        //连接上发来数据时触发的事件及函数
     console.log(data.toString())   
   })
 
   conn.write('HTTP/1.1 200 OK\r\n')    //向客户端发送
-  conn.write('Content-Type: text/html\r\n')
+  conn.write('Content-Type:text/html\r\n')
   conn.write('\r\n')
   conn.write(`<h1>
   it works! ${new Date()}
@@ -20,7 +20,7 @@ server.on('connection', conn => { //客户端连接成功
   conn.end()
 })
 
-server.listen(port, () => {
+server.listen(port,'127.0.0.1',() => {  //接收来自本机ip的连接
   console.log('listening on port', port)
 })
 
@@ -34,6 +34,8 @@ server.listen(port, () => {
 ![image-20200713171401576](14%20HTTP.assets/image-20200713171401576.png)
 
 ![image-20200713172017451](14%20HTTP.assets/image-20200713172017451.png)
+
+> nc -l  -p 8800 也能监听
 
 ```javascript
 var net = require('net')
@@ -51,7 +53,7 @@ server.on('connection', conn => {
     console.log(firstLinePart)
 
     conn.write('HTTP/1.1 200 OK\r\n')
-    conn.write('Content-Type: text/html\r\n')
+    conn.write('Content-Type:text/html\r\n')
     conn.write('\r\n')
     conn.write(`<h1>
       you are visiting ${firstLinePart[1]},  use ${firstLinePart[0]} method
@@ -67,23 +69,31 @@ server.listen(port, () => {
 })
 ```
 
+> HTTP/1.1 200 OK    状态码 3xx 跳转 缓存  4xx 请求有问题 5xx  服务器端出了问题
+>
+> nc www.baidu.com 80 
+>
+> GET /foo/var HTTP/1.1 
+
+#### 表单提交
+
 * decodeURIComponent   解码
 
 * encodeURIComponent   转义编码
 
-* GET /example/message.html?name=Jean&message=Yes%3F HTTP/1.1
+* GET /example/message.html?name=Jean&message=Yes%3F HTTP/1.1   真正的 ?使用%3代替
 
-* 可能改变服务器信息
+* 如果是post方法 浏览器发出的请求是这样的
 
   POST /example/message.html HTTP/1.1
 
   Host: xxxx.com
 
-  User-Agent: yyyyyy
-
-
-
-​	   name=lily&message=hello
+  User-Agent: yyyyyy  
+  
+  
+  
+   name=lily&message=hello
 
 ```javascript
 var net = require('net')
@@ -95,12 +105,6 @@ server.on('connection', conn => {
   conn.on('data', data => {
     var d = data.toString()
     console.log(d)
-    var lines = d.split('\r\n')
-    var firstLine = lines.shift()
-    var firstLinePart = firstLine.split(' ')
-    var method = firstLinePart[0]
-    var path = firstLinePart[1]
-
 
     conn.write('HTTP/1.1 200 OK\r\n')
     conn.write('Content-Type: text/html\r\n')
@@ -125,92 +129,7 @@ server.listen(port, () => {
 
 ![image-20200713211252019](14%20HTTP.assets/image-20200713211252019.png)
 
-```javascript
-var net = require('net')
-var server = net.createServer()
-var port = 80
-
-var msgs = [
-  {
-    name: 'Lily',
-    content: 'hello',
-    timestamp: 1594648307592 //Date.now()
-  },
-  {
-    name: 'Jim',
-    content: 'world',
-    timestamp: 1594648907592
-  }
-]
-
-server.on('connection', conn => {
-
-  conn.on('data', data => {
-    var d = data.toString()
-
-    var [headers, body] = d.split('\r\n\r\n')
-    var [firstLine, ...lines] = headers.split('\r\n')
-    var [method, path] = firstLine.split(' ')
-
-    // console.log(headers + `\r\n`)
-    // console.log(body + `\r\n`)
-    if (method === 'POST') {
-      var msg = parseQueryString(body)
-      msg.timestamp = Date.now()
-      msgs.push(msg)
-
-
-
-      conn.write('HTTP/1.1 302 Template\r\n')
-      conn.write('Location: /\r\n') //挪动到了新地址  /代表根目录  回跳到根目录 用get方式打开页面
-      conn.write('\r\n')
-      return  //防止刷新再提交
-    }
-
-
-
-
-    conn.write(`
-        <form method='POST' action="">
-          Name: <input type="text" name="name">
-          Message: <textarea name="content"></textarea>
-          <button>Submit</button>
-        </form>
-        <hr>
-        ${
-      Array.from(msgs).reverse().map(msg => `
-          <div>
-            <h3>${msg.name.replace(/</g, '&lt;')} <small>${new Date(msg.timestamp).toString()}</small></h3>
-            <p>${msg.content.replace(/</g, '&lt;')}</p>
-          </div>
-        `).join('')
-      }
-    `)
-    //reverse 最新的发言在上面 且不更改原数组
-    // msgs.forEach(msg => {
-    //   conn.write(`
-    //       <div>
-    //         <h3>${msg.name}</h3>
-    //         <p>${msg.content}</p>
-    //       </div>
-    //     `)
-    // })
-    conn.end()
-  })
-})
-server.listen(port, () => {
-  console.log('listening on port', port)
-})
-
-function parseQueryString(str) {
-  return str.split('&')
-    .reduce((result, pair) => {
-      var [key, val] = pair.split('=')
-      result[key] = decodeURIComponent(val) //汉字
-      return result
-    }, {})
-}
-```
+#### 留言板
 
 > http
 >
