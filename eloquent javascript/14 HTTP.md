@@ -213,7 +213,7 @@ server.on('connection', conn => {
     // console.log(headers + `\r\n`)
     // console.log(body + `\r\n`)
     if (method === 'POST') {
-      var msg = parseQueryString(body)
+      var msg = parseQueryString(body.replace(/\+/g, '%20'))  //空格的变成的+换成空格
       msg.timestamp = Date.now()
       msgs.push(msg)
 
@@ -263,14 +263,16 @@ function parseQueryString(str) {
 }
 ```
 
-* 浏览器发送HTTP请求通过XMLHttpRequest接口
+#### xhr对象
+
+* 浏览器通过JS(而不是刷新页面)发送HTTP请求的接口叫做XMLHttpRequest  
 * 这个接口允许你把返回的内容按到xml格式来解析
 
 ```javascript
 xhr = new XMLHttpRequest()
 xhr.open('GET', 'https://xieranmaya.github.io/images/cats/cats.json')
 xhr.send()
-xhr.responseText
+xhr.responseText //响应来的内容
 xhr.status
 xhr.getAllResponseHeaders()
 xhr.getResponseHeader('Content-length')
@@ -282,7 +284,7 @@ xhr2 = new XMLHttpRequest()
 xhr2.open('GET', 'https://xieranmaya.github.io/images/cats/cats.xml')
 xhr2.send()
 //send()里面是请求体
-xhr2.responseXML
+xhr2.responseXML //解析为xml格式
 xhr2.responseXML.querySelector('cat:first-child url').getAttribute('value')
 
 
@@ -292,7 +294,7 @@ xhr2.open('GET', 'https://xieranmaya.github.io/images/cats/cats.xml',false)
 //false send等到响应完全收到返回
 xhr = new XMLHttpRequest()
 xhr.open('GET', 'https://xieranmaya.github.io/images/cats/cats.json', false)
-xhr.setRequestHeader('foo','bar')
+xhr.setRequestHeader('foo','bar') //foo头的值是bar
 console.time('send')
 xhr.send() //false时 这个时间不能网页不能交互 类似死循环 true时立即执行完 但是不一定会收到响应
 console.timeEnd('send')
@@ -304,7 +306,9 @@ console.log(xhr.responseText)
 
 ```
 
-```javascript
+#### xml加载图片
+
+```html
 <button>Show Cats!</button>
 <script>
   var btn = document.querySelector('button')
@@ -326,6 +330,10 @@ console.log(xhr.responseText)
   })
 </script>
 ```
+
+#### 	AJAX改表单
+
+> 点击submit  不提交html表单 改为发起ajax请求 成功 自己将新信息加上
 
 ```javascript
 // 合法xml
@@ -359,7 +367,7 @@ server.on('connection', conn => {
     var [method, path] = firstLine.split(' ')
 
     if (method === 'POST') {
-      var msg = parseQueryString(body)
+      var msg = parseQueryString(body.replace(/\+/g, '%20'))
       msg.timestamp = Date.now()
       msgs.push(msg)
 
@@ -433,9 +441,11 @@ function parseQueryString(str) {
 
 > http sandboxing
 >
-> 不能跨域请求 origin 
+> 不能跨域请求 origin   第一个/之前的必须完全一样 127.0.0.1:8080 和localhost:8080也不一样 端口号也必须一样 http和https也不一样
 >
-> Access-Control-Origin:* //能被跨域请求
+> Access-Control-Allow-Origin:* //能被跨域请求
+
+#### xhr操作封装 
 
 ```javascript
 function ajax(method,url,data,callback){
@@ -504,7 +514,7 @@ function get(url,callback){
 }
 
 get('http://www.xxx.com/aa/bb/cc', function (data, err) {
-  if (data == null) {
+  if (data === null) {
     出错了
   } else {
     成功了
@@ -526,14 +536,19 @@ function post(url, data, callback) {
 // })
 
 
-// axios 封装ajax
+try{
+  get()
+}catch(e){
+  
+}
+//catch不到错误 get只是把函数泵定 事件的callback xhr的send都是异步 try catch执行完了 他们才执行
 ```
 
 ```javascript
 xhr = new XMLHttpRequest()
 xhr.open('GET', url.false) //sync 请求发出去没收到响应 send会持续运行
 
-xhr.send() //onload 会在send结束后即刻运行 但此时onload事件还没绑定
+xhr.send() //onload 会在send结束后即刻运行 但此时onload事件还没绑定 所以onload不会运行
 
 xhr.onload = () => {
   console.log(xhr.responseText)
@@ -568,7 +583,7 @@ sqrtAsync(2, (value) => {
 
 #### 随缘加载
 
-```javascript
+```html
 <button>Show Cats</button>
 <script>
   var btn = document.querySelector('button')
@@ -579,7 +594,7 @@ sqrtAsync(2, (value) => {
       var cats = JSON.parse(xhr.responseText)
       for (let cat of cats) {
         let img = document.createElement('img')
-        img.src = 'https://xieranmaya.github.io/images/cats/' + cat.url
+        img.src = cat.fullUrl
         img.onload = function () {
           document.body.appendChild(img)
         }
@@ -592,7 +607,7 @@ sqrtAsync(2, (value) => {
 
 #### one by one
 
-```javascript
+```html
 <button>Show Cats</button>
 <script>
   var btn = document.querySelector('button')
@@ -606,7 +621,7 @@ sqrtAsync(2, (value) => {
       one()
 
       function one() {
-        getImg('https://xieranmaya.github.io/images/cats/' + cats[i++].url, img => {
+        getImg(cats[i++].fullUrl, img => {
           document.body.appendChild(img)
           if (i < cats.length) {
             one()
@@ -630,7 +645,7 @@ sqrtAsync(2, (value) => {
 
 #### two by two
 
-```javascript
+```html
 <button>Show Cats</button>
 <script>
   var btn = document.querySelector('button')
@@ -689,7 +704,7 @@ sqrtAsync(2, (value) => {
 
 #### 类似百度云下载方式
 
-```javascript
+```html
 <button>Show cats</button>
 <script>
   let btn = document.querySelector('button')
