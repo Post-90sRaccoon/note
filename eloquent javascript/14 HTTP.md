@@ -836,7 +836,9 @@ sqrtAsync(2, (value) => {
 
    设置浏览器发送Referer策略
 
-   只需要在html（即页面）的响应头里设置
+   只需要在html（即页面）的响应头里设置 
+
+   打开一个页面 页面的资源如果请求的话 带一个referrer头
 
 * Transfer-Encoding: chunked 响应数据的传输方式，一段一段的发。
 
@@ -856,7 +858,7 @@ sqrtAsync(2, (value) => {
 
    same-origin 可以被放入同源页面的iframe里
 
-* Content-Security-Policy 内容安全策略，只对html页面响应，设置本页面的各项安全相关的配置
+* Content-Security-Policy 内容安全策略，只对html页面响应，设置本页面的各项安全相关的配置  有需要内容html有这个头就可以了
 
   * default-src 'none';
 
@@ -970,4 +972,36 @@ function JSONP(url,callback){
   document.body.appendChild('script')
 }
 ```
+
+#### window.name
+
+> window.name 不随页面跳转变化
+
+#### iframe
+
+> iframe.syc
+
+#### proxy
+
+> 服务器没有跨域 同源策略 只有页面有 
+>
+> 服务器请求相关资源 返回给前端 服务器代理
+>
+> `get('http://www.a.com/proxy?target=http://www.b.com/foo/bar')`
+
+### 两个不同域页面的通信
+
+> frame里面的页面和外面的页面通信
+>
+>  frame.contentWindow frame里面页面的代理对象
+>
+> win = window.open() / window.opener()  这种也能拿到代理对象  一个页面是另一个页面打开的
+>
+> window.addEventListener(‘message’,e=>{})
+>
+> frame.contentWindow.postMessage({a:1,b:2},’https//:www.baidu.com’)  参数data和目标页面的域
+>
+> 用frame的代理对象给frame发消息
+>
+> 也可以跨域
 

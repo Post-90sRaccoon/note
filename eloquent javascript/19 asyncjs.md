@@ -1,4 +1,4 @@
-# async.js
+# asyncjs
 
 ```javascript
 async.series([ //done之后结束 然后开始下一个
