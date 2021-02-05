@@ -1,9 +1,9 @@
 #  Promise
 
-* 一个promise代表一个异步操作的结果
+* 一个promise代表一个异步操作的结果 
 
 ```javascript
-var p = new Promise(function (resolve, reject) { //成功和失败分别对应一个回调函数
+var p = new Promise(function executor(resolve, reject) { //成功和失败分别对应一个回调函数
   var xhr = new XMLHttpRequest()
   xhr.open('GET', 'a.txt')
 
@@ -36,7 +36,7 @@ class Promise {
 
     }
     try {
-      executor(res, rej)
+      executor(res, rej) //executor 在promise构造时立刻执行了
     } catch (e) {
 
     }
@@ -46,8 +46,8 @@ class Promise {
 
 ```javascript
 p.then(f1, f2)
-//promise结果被确定 传入一个f1 一个f2
-//this 是window 严格模式下是undefined
+//then方法在promise结果被确定后 传入一个onResolve 一个onReject
+//this 被强行设置为window 严格模式下是undefined
 
 p.then(value => {
 
@@ -307,7 +307,7 @@ p.then(a, b)
   .then(e)
   .then(g, i)
   .catch(h)
-//then是立刻执行的 延迟按照次序运行的是里面的参数函数
+//then是立刻执行的 延迟按照次序运行的是里面的参数函数 即then执行 立刻返回（如果返回promise 可能是一个不确定状态的promise） 开始下一个then
 
 
 p.then(value => {
@@ -315,7 +315,8 @@ p.then(value => {
     return value * value
   })
 })
-//p确定状态 then()才能执行 如果执行代码时p还没有确定状态 只能把p先存起来 等到p确定状态才运行
+//这里的then不是一个时机运行的 p2不一定什么时候确定状态
+//p确定状态 then()才能执行 如果执行代码时p还没有确定状态 只能把then里面的先存起来 等到p确定状态才运行
 ```
 
 ```javascript
@@ -455,6 +456,8 @@ Promise.all([getValue(1), getValue(2), getValue(3)])
 
 //[1,2,3] 大概3~5s之后 等getValue全部运行完
 ```
+
+> 下面 then函数里面的函数如果异步 抽象为promise 
 
 ```javascript
 p2 = p.then(value => {
@@ -657,7 +660,7 @@ getJSON('a.json')
 //调用链最后挂catch就好
 ```
 
-##### promise同步处理异常
+##### 同步处理异常
 
 ```javascript
 function getJSON(url) {

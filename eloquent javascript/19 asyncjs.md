@@ -1,5 +1,7 @@
 # asyncjs
 
+* 核心 调用时done函数 放在所有异步操作执行完后执行
+
 ```javascript
 async.series([ //done之后结束 然后开始下一个
   function (done) {
@@ -73,7 +75,7 @@ async.parallel([ //全部并行开始
 ```javascript
 function parallel(tasks, cb) {
   var completedCount = 0
-  for (var i = 0 i < tasks.length i++) {
+  for (var i = 0;i < tasks.length;i++) {
     var task = tasks[i]
 
     task(() => {
@@ -118,7 +120,7 @@ function parallelLimit(tasks, limit, cb) {
   var i = 0
   var completedCount = 0
 
-  for (var j = 0 j < limit j++) {
+  for (var j = 0;j < limit;j++) {
     one()
   }
 
@@ -141,7 +143,7 @@ function parallelLimit(tasks, limit, cb) {
 
 ```javascript
 tasks[i]()  
-//数组去除属性调用 this是task所在的数组
+//数组属性调用 this是task所在的数组
 task(()=>{})
 //this 是window
 
@@ -152,16 +154,16 @@ foo['bar']()
 
  ```javascript
 function f(a, b) {
-  arguments[1]() //这样调用 arguments
+  arguments[1]() //这样调用 this是arguments
 }
 
 f(1, function () {
-  console.log(this) //看调用方式
+  console.log(this) //看调用方式 这里声明 没有调用
 })
  ```
 
 ```javascript
-async.map([1, 2, 3, 4], function (it, cb) {
+async.map([1, 2, 3, 4], function mapper (it,cb) { //不即刻返回结果 因为是异步的 把异步结果返回给callback  
   setTimeout(() => {
     cb(null, it * it)
   }, 100)
@@ -259,7 +261,7 @@ a.queue(function (next) {
 for (var i = 0; i < cats.length; i++) {
   a.queue(done => {
     getImg(cats[i].fullUrl, img => {
-      document.body.appendChild()
+      document.body.appendChild(img)
       done()
     })
   })
@@ -267,7 +269,7 @@ for (var i = 0; i < cats.length; i++) {
 
 cats.reduce((a, cat) => {
   return a.queue(done => {
-    getImg(cats[i].fullUrl, img => {
+    getImg(cat.fullUrl, img => {
       document.body.appendChild()
       done()
     })
@@ -279,7 +281,7 @@ cats.reduce((a, cat) => {
 class TaskQueue {
   constructor() {
     this.tasks = []
-    this.hasTaskRunning = false
+    this.hasTaskRunning = false  //是否有任务正在执行 
     // this.next = () => {
     //   if (this.tasks.length) {
     //     let task = this.tasks.shift()
@@ -291,8 +293,8 @@ class TaskQueue {
   }
   next = () => {
     if (this.tasks.length) {
-      let task = this.tasks.shift()
-      task(this.next)
+      let task = this.tasks.shift() //执行下一个任务
+      task(this.next) 
     } else {
       this.hasTaskRunning = false
     }
@@ -323,7 +325,7 @@ class TaskQueue {
       this.hasTaskRunning = true
       let next;
       task(next = () => {
-        if (this.tasks.length) {
+        if (this.tasks.length) { //要保证this是taskqueue的实例
           let task = this.tasks.shift()
           task(next)
         } else {
