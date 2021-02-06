@@ -742,6 +742,7 @@ doSomething().then(function () {
 
 doSomething().then(doSomethingElse())
 //then只接函数 里面不是函数就忽略掉 相当于没有参数 doSomething和doSomethingElse的时机非常近
+//dosomthing启动一瞬间结束 他启动的promise晚执行
 doSomething().then(doSomethingElse)
 ```
 
@@ -751,7 +752,7 @@ doSomething().then(doSomethingElse)
 p.then(value => {
   foo().then(bar => {
     baz().then(baa => {
-
+//这样成回调了
     })
   })
 })
@@ -790,6 +791,7 @@ a().then1(function f1() {
 ```javascript
 a.then1(b()).then2(f)
 //f等 then1 但是 返回promise 相当于空 所以取决于a
+JSON.parse(a+b) //a+b先运行 先把参数计算出来
 ```
 
 ![image-20200722205257945](17%20Promise.assets/image-20200722205257945.png)
@@ -844,6 +846,10 @@ Promise.resolve().then()
   .then()
   .then()
   .catch()//catch 不到
+
+function sleep(time) {
+  return new Promise(setTimeout(resolve, time))
+}
 ```
 
 ```javascript
@@ -853,26 +859,28 @@ p1 = new Q(f1)
 p2 = new BlueBird(f2)
 
 p1.then(value => {
-  return p2   //发现p2有then方法
+  return p2   //发现p2有then方法 q和bluebird也可以交互
 })
 ```
+
+#### Promise一个一个运行
 
 ```javascript
 function executeSequentially(promises) {
   var result = Promise.resolve();
   promises.forEach(function (promise) {
-    result = result.then(promise);
+    result = result.then(promise); //then接的是函数 不是promise
   });
   return result;
 }
 
 executeSequentially([
-  db.remove(1),
+  db.remove(1), //只要promise函数创建出来就会执行异步操作
   db.remove(2),
   db.remove(3)
-])//只要promise函数创建出来就会执行异步操作
+])
 
-
+//promise工厂
 function executeSequentially(promiseFactories) {
   return Promise.resolve()
     .then(promiseFactories[0])
@@ -880,7 +888,7 @@ function executeSequentially(promiseFactories) {
     .then(promiseFactories[2])
     .then(promiseFactories[3])
 
-  return  promises.reduce(function(promise){
+  return  promises.reduce(function(result,promise){
     return result.then(()=>promise)
   },Promise.resolve())
 }
@@ -901,6 +909,7 @@ executeSequentially([
 ```
 
 ```javascript
+//两个promise串行执行
 getUserByName('nolan').then(function (user) {
   return getUserAccountById(user.id);
 }).then(function (userAccount) {
@@ -930,7 +939,7 @@ getUserByName('nolan').then(function (user) {
 
 #### 什么是promise
 
-1. 是一个函数或者方法  有一个then方法 而且then的行为遵循文档
+1. 是一个函数或者对象  有一个then方法 而且then的行为遵循文档
 2. 有then方法
 3. value是JS里合法的值 包括undefined then方法 和promise
 4. exception是throw抛出来的值
@@ -985,20 +994,19 @@ getUserByName('nolan').then(function (user) {
    })
    function ResolvePromise(promise, x, resolve, reject) {
      if (x === promise) {
-       reject(new TypeError('xxxxx'))
+       reject(new TypeError('xxxxx')) //不能根据自己确定自己的状态 p.then(()=>p)
        return
      }
-     if (x instanceof MyPormise) {
+     if (x instanceof MyPormise) { //不同类型的promise
        x.then(resolve, reject)
        return
      }
      if (x && (typeof x == 'function' || typeof x == 'object')) {
        try {
-         var then = x.then  //可能是getter
+         var then = x.then  //可能是getter 要取出来 不然读两遍可能不一样
          var called = false
          if (typeof then === 'function') {
            //x.then(resolvePromise,rejectPromise)
-           //万一是getter x.then会读两次
            then.call(x, function (y) {
              caller = true
              ResolvePromise(promise, y, resolve, reject)
@@ -1019,13 +1027,13 @@ getUserByName('nolan').then(function (user) {
      }
    }
    ```
-
-   > https://web.dev/promises/
-
-   ```javascript
+   
+> https://web.dev/promises/
+   
+```javascript
    img1.ready = function () {
      return new Promise((resolve, reject) => {
-       if (this.isLoaded) {
+       if (this.isLoaded) {//isLoaded伪代码 假设图片早已加载完成了
          resolve()
        }
        if (this.isErrored) {
@@ -1040,8 +1048,9 @@ getUserByName('nolan').then(function (user) {
      })
    }
    ```
-
-   ```javascript
+   
+```javascript
+   //jQuery 创建promise
    var dfd = $.dererred()
    // dfd.promise
    // dfd.resolve
@@ -1073,7 +1082,7 @@ getUserByName('nolan').then(function (user) {
    
 
 ```javascript
-//串行加载
+//串行加载 慢
 getJson('https://googlesamples.github.io/web-fundamentals/fundamentals/primers/story.json')
   .then(story => {
     var urls = story.chapterUrls
@@ -1134,24 +1143,24 @@ story.chapterUrls.map(url => getJson(url))
 Promise.all(
   story.chapterUrls.map(url=>{
     return getJson(url).then(c=>{
-      addHtmlToPage(c.html)
+      addHtmlToPage(c.html)   //谁先加载 谁先上 但会乱序
     })
   })
 )
 .then(chapters=>{
-  chapters.forEach(it=>addHtmlToPage(it.html))
+  chapters.forEach(it=>addHtmlToPage(it.html)) //全加载后 才能加上
 })
 ```
 
 ```javascript
 //并行加载 串行显示
 var chapterPromises = story.chapterUrls.map(url => {
-  return getJson(url)
+  return getJson(url)  //所有章节开始加载了
 })
 
 Promise.resolve()
   .then(() => {
-    return chapterPromises[0]
+    return chapterPromises[0]   //等待加载完成开始显示
   }).then(chapter => {
     addHtmlToPage(chapter.html)
   }).then(() => {
@@ -1182,7 +1191,7 @@ var chapterPromises = story.chapterUrls.map(url => {
   }).then(chapter=>{
     addHtmlToPage(chapter.html)
   })
-},Promise.resolve)
+},Promise.resolve())
 .then(()=>{
   removeLoading()
 })
@@ -1200,6 +1209,9 @@ var chapterPromises = story.chapterUrls.map(url => {
   removeLoading()
 })
 ```
+
+* http抽象方式 aria restful
+* SNI
 
 ### run函数
 

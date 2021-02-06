@@ -74,7 +74,7 @@ window.onload = function () {
 ```javascript
 $0.value //28
 $0.value = 29 //29
-$0.value //29 页面上显示29 但是html里还是28
+$0.value //29 页面上显示29 但是html的源码里还是28
 $0.getAttribute('value') // 28
 
 
@@ -115,7 +115,7 @@ a = 1    //执行多次也一样 幂等操作
 
 ```html
 <form></form>
-$0.form 指向form的dom结点
+$0.form 指向form的dom结点  表单内部dom元素有一个form属性指向其所在的form结点
 $0.elements 指向form里面所有的表单元素
 
   < form id = f>
@@ -155,6 +155,7 @@ function normalizeForm(form) {
   return result
 }
 //还要没考虑的情况 button radio checkbox select input textarea
+//jQuery里 $('form').serialize()
 ```
 
 ##### extended url encode 扩展url编码
@@ -167,9 +168,13 @@ function normalizeForm(form) {
   <input type="checkbox" name="color['foo'][]" value="red">
   <input type="checkbox" name="color['foo'][]" value="green">
   <input type="checkbox" name="color['foo'][]" value="blue">
+//序列化之后是这样的
   {
-  color: ['red', 'green', 'blue']
+  color: {
+		foo:['red', 'green', 'blue']
+		}
   }
+//冗余多 不太常用
 ```
 
 ### Text fields
@@ -205,9 +210,9 @@ function normalizeForm(form) {
 </script>
 ```
 
-* `document.getSelection()`返回选择的内容 用来做富文本编辑器
+* ==`document.getSelection()`==返回选择的内容 用来做富文本编辑器
 
-```javascript
+```html
 <textarea name="" id="" cols="30" rows="10"></textarea>
 <script>
   var text = document.querySelector('textarea')
@@ -227,7 +232,7 @@ function normalizeForm(form) {
 
 * `$0.oncontextmenu` 上下文 右键菜单
 
-```javascript
+```html
 <input type="text"> length：<span id="length">0</span>
 <script>
   var text = document.querySelector('input')
@@ -293,7 +298,7 @@ function getSelected(selectNode) {
 }
 ```
 
-```javascript
+```html
 <select multiple>
   <option value="1">0001</option>
   <option value="2">0010</option>
@@ -312,9 +317,8 @@ function getSelected(selectNode) {
     }
     output.textContent = number
   }
+    //Array.from(select.options).filter(it=>it.selected).map(it=>it.value).map(Number).reduce((a,b)=>a+b)
   })
-
-Array.from(select.options).filter(it=>it.selected).map(it=it.value).map(Number).reduce((a,b)=>a+b)
 </script>
 ```
 
@@ -328,7 +332,7 @@ Array.from(select.options).filter(it=>it.selected).map(it=it.value).map(Number).
 </script>
 ```
 
-```javascript
+```html
 <input type="file">
 <script>
   var input = document.querySelector('input')
@@ -362,8 +366,8 @@ function readFileAsText(file) {
     fr.onload = () => {
       resolve(fr.result)
     }
-    fr.onerror = () => {
-      reject(fr.error)
+    fr.onerror = e=> {
+      reject(e)
     }
     fr.readAsText(file)
   })
@@ -380,10 +384,12 @@ for (var i = 0; i < FileList.length; i++) {
     console.log(file.name, fr.result)
   }//异步的
   fr.readAsText(file) 
+}
 ```
 
 ```html
 <form action="" method="POST" enctype="application/x-www-form-urlencoded"></form>
+//默认值
 
 //传文件要用下面这个
 <form action="" method="POST" enctype="multipart/form-data"></form>
@@ -417,7 +423,7 @@ Content-Disposition: form-data; name="avatar"; filename="paint.html"
 Content-Type: text/html
 ```
 
-#### ajax提交文件
+#### ajax提交文件 formdata
 
 ```javascript
 var fd = new FormData()
@@ -445,3 +451,17 @@ localStorage.fooo = JSON.stringify({ a: 1, b: 2 })
 ```
 
 * localStorage以站点为单位 不是页面
+* 一般是5m 
+* sessionstorage 只在当前页面有效 关了就没了
+* window.onstorage 在localStorage变化时触发 同一个域的页面都可以感知
+
+
+
+> aveIcon软件转换icon图标
+
+#### 补充
+
+> checkbox 第三种状态  $0.indeterminate = true 这时checked 是false
+>
+> 上传头像 要显示图片 filereader要读成base64 fr.readAsDataURL 还有URL.createObjectURL
+
