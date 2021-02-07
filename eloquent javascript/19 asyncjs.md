@@ -418,3 +418,254 @@ class TaskQueue {
 }
 ```
 
+#### promise和生成器函数结合 实现复杂的异步
+
+```javascript
+function* f() {
+  console.log('start')
+  let a = yield getValue(5, 2000)
+  console.log(2)
+  yield delay(1000)
+  let b = yield getValue(10, 3000)
+}
+
+let g = f()
+g.next().value.then(value=>{
+  g.next(value).value.then(value=>{
+    g.next(value).value.then(value=>{
+      g.next(value)
+    })
+  })
+})
+console.log(1)
+//start 1 2  就算then前面的promise已经确认状态 也不会立即执行then里面的函数 异步
+
+g.next().value.then(value => {
+  g.next(value)
+},reason=>{
+  g.throw(reason)
+})
+
+
+
+
+function getValue(val, duration) {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve(val)
+    }, duration);
+  })
+}
+
+function delay(duration) {
+  return new Promise(resolve => {
+    setTimeout(resolve, duration)
+  })
+}
+function getJSON(url) {
+  return get(url).then(JSON.parse)
+}
+function get(url) {
+  return new Promise((resolve, reject) => {
+    let xhr = new XMLHttpRequest()
+    xhr.open('get', url)
+    xhr.onload = () => {
+      resolve(xhr.responseText)
+    }
+    xhr.onerror = e=>{
+      reject(new Error('NETWORK ERROR'))
+    }
+    xhr.send()
+  })
+}
+```
+
+#### run函数
+
+```javascript
+ run(function* f() {
+    console.log('start')
+
+
+    var data = yield getJSON('https://xieranmaya.github.io/images/cats/cats.json')
+    console.log(data)
+
+    var a = yield getValue(5, 2000)
+    console.log(a)
+    yield delay(1000)
+    console.log(a)
+    var b = yield getValue(10, 3000)
+    console.log(a + b)
+
+    return 888
+  }).then(value => {
+    console.log(value)
+    console.log('f run completed...')
+  }).catch(e => {
+    console.log('run failed', e)
+  })
+
+
+
+  function run(generatorFunction) {
+    return new Promise((resolve, reject) => {
+      var generator = generatorFunction()
+      var generated
+      try {
+        generated = generator.next()
+      } catch (e) {
+        reject(e)
+        return
+      }
+
+      step()
+
+      function step() {
+        if (!generated.done) {
+          generated.value.then(val => {
+            try {
+              generated = generator.next(val)
+            } catch (e) {
+              reject(e)
+              return
+            }
+            step()
+          }, reason => {
+            try {
+              generated = generator.throw(reason)
+            } catch (e) {
+              reject(e)
+              return
+            }
+            step()
+          })
+        } else {
+          resolve(generated.value)
+        }
+      }
+    })
+  }
+```
+
+```javascript
+  function *bar(){
+
+  }
+  run(function *(){
+    console.log(1)
+    yield run(bar)
+    var myip = yield getMyIp()
+  })
+  //等待bar函数先运行 
+```
+
+### 异步函数
+
+```javascript
+ //异步函数
+  async function foo() {
+    var data = await getJSON('https://xieranmaya.github.io/images/cats/cats.json')
+    console.log(data)
+    await delay(2000)
+    var a = await 2
+    //Promise.resolve(2)
+    console.log(data)
+    return delay(2000) //return 888 //
+  }
+  //返回promise
+  foo().then(val => {
+    console.log(val)
+  })
+
+  //箭头函数也可以异步
+  var a = async () => { }
+
+
+
+  function getValue(val, duration) {
+    return new Promise(resolve => {
+      setTimeout(() => {
+        resolve(val)
+      }, duration);
+    })
+  }
+
+  function delay(duration) {
+    return new Promise(resolve => {
+      setTimeout(resolve, duration)
+    })
+  }
+
+  function getJSON(url) {
+    return get(url).then(JSON.parse)
+  }
+
+  function get(url) {
+    return new Promise((resolve, reject) => {
+      var xhr = new XMLHttpRequest()
+      xhr.open('get', url)
+      xhr.onload = function () {
+        resolve(xhr.responseText)
+      }
+      xhr.onerror = function () {
+        reject(new Error('Network Error'))
+      }
+      xhr.send()
+    })
+  }
+```
+
+```javascript
+async function foo() {
+    console.log(1)
+    await 2
+    console.log(3)
+  }
+  foo()
+  console.log(4)
+
+//1 4 3
+```
+
+```javascript
+var div = document.querySelector('div')
+getComputedStyle(div, 'div::after')
+//选不到伪元素 纯粹装饰才用伪元素 但是能获取伪元素css样式
+
+async function foo(){
+  var a = await getJSON('a.json')
+}
+
+//并行加载 串行执行
+
+async function loadStory(){
+  var story = await getJSON('stroy.json') //里面有各个chapter的json 的url
+  var chapterPromises = story.chapters.map(getJSON) //并行加载 创建5个promise
+
+  for (var chapterPromise of chapterPromises){
+    var chapter = await chapterPromise 
+    addToPage(chapter) //串行 执行
+  }
+}
+
+
+
+
+
+function makePizza(sauceType = 'red') {
+// cheese 等待 sauce 
+  let doughPromise = makeDough();
+  let saucePromise = makeSauce(sauceType);
+  let cheesePromise = saucePromise.then(sauce => {
+    return grateCheese(sauce.determineCheese());
+  });
+
+  return Promise.all([doughPromise, saucePromise, cheesePromise])
+    .then(([dough, sauce, cheese]) => {
+      dough.add(sauce);
+      dough.add(cheese);
+      return dough;
+    });
+}
+```
+

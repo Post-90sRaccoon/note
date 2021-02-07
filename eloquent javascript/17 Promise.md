@@ -1029,7 +1029,7 @@ getUserByName('nolan').then(function (user) {
    ```
    
 > https://web.dev/promises/
-   
+
 ```javascript
    img1.ready = function () {
      return new Promise((resolve, reject) => {
@@ -1047,8 +1047,8 @@ getUserByName('nolan').then(function (user) {
        }
      })
    }
-   ```
-   
+```
+
 ```javascript
    //jQuery 创建promise
    var dfd = $.dererred()
@@ -1077,7 +1077,7 @@ getUserByName('nolan').then(function (user) {
      })//同步执行 promise创建出来 resolve和reject已经挂上了
      return dfd
    } 
-   ```
+```
 
    
 
@@ -1211,248 +1211,5 @@ var chapterPromises = story.chapterUrls.map(url => {
 ```
 
 * http抽象方式 aria restful
-* SNI
-
-### run函数
-
-```javascript
-  run(function* f() {
-    console.log('start')
-
-
-    var data = yield getJSON('https://xieranmaya.github.io/images/cats/cats.json')
-    console.log(data)
-
-    var a = yield getValue(5, 2000)
-    console.log(a)
-    yield delay(1000)
-    console.log(a)
-    var b = yield getValue(10, 3000)
-    console.log(a + b)
-
-    return 888
-  }).then(value => {
-    console.log(value)
-    console.log('f run completed...')
-  }).catch(e => {
-    console.log('run failed', e)
-  })
-
-  // g.next().value.then(value => {
-  //   //这里getValue(5,2000) resolve了 完成
-  //   g.next(value).value.then(value => {
-  //     //这里的value 是resolve的5
-  //     g.next(value).value.then(value => {
-  //       g.next(value)
-  //       //传入10
-  //     })
-  //   })
-  // })
-
-  // g.next().value.then(value => {
-  //   g.next(value).value.then(value => {
-  //     g.next(value).value.then(value => {
-  //       g.next(value).value.then(value => {
-  //         g.next(value)
-  //       })
-  //     })
-  //   })
-  // })
-
-  function run(generatorFunction) {
-    return new Promise((resolve, reject) => {
-      var generator = generatorFunction()
-      var generated
-      try {
-        generated = generator.next()
-      } catch (e) {
-        reject(e)
-        return
-      }
-
-      step()
-
-      function step() {
-        if (!generated.done) {
-          generated.value.then(val => {
-            try {
-              generated = generator.next(val)
-            } catch (e) {
-              reject(e)
-              return
-            }
-            step()
-          }, reason => {
-            try {
-              generated = generator.throw(reason)
-            } catch (e) {
-              reject(e)
-              return
-            }
-            step()
-          })
-        } else {
-          resolve(generated.value)
-        }
-      }
-    })
-  }
-
-  console.log(1)
-  //先打印1 上面异步调用 在所在调用栈都执行完执行
-
-  function getValue(val, duration) {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        resolve(val)
-      }, duration);
-    })
-  }
-
-  function delay(duration) {
-    return new Promise(resolve => {
-      setTimeout(resolve, duration)
-    })
-  }
-
-  function getJSON(url) {
-    return get(url).then(JSON.parse)
-  }
-
-  function get(url) {
-    return new Promise((resolve, reject) => {
-      var xhr = new XMLHttpRequest()
-      xhr.open('get', url)
-      xhr.onload = function () {
-        resolve(xhr.responseText)
-      }
-      xhr.onerror = function () {
-        reject(new Error('Network Error'))
-      }
-      xhr.send()
-    })
-  }
-```
-
-```javascript
-  function *bar(){
-
-  }
-  run(function *(){
-    console.log(1)
-    yield run(bar)
-    var myip = yield getMyIp()
-  })
-  //等待bar函数先运行
-```
-
-### 异步函数
-
-```javascript
- //异步函数
-  async function foo() {
-    var data = await getJSON('https://xieranmaya.github.io/images/cats/cats.json')
-    console.log(data)
-    await delay(2000)
-    var a = await 2
-    //Promise.resolve(2)
-    console.log(data)
-    return delay(2000) //return 888 //
-  }
-  //返回promise
-  foo().then(val => {
-    console.log(val)
-  })
-
-  //箭头函数也可以异步
-  var a = async () => { }
-
-
-
-  function getValue(val, duration) {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        resolve(val)
-      }, duration);
-    })
-  }
-
-  function delay(duration) {
-    return new Promise(resolve => {
-      setTimeout(resolve, duration)
-    })
-  }
-
-  function getJSON(url) {
-    return get(url).then(JSON.parse)
-  }
-
-  function get(url) {
-    return new Promise((resolve, reject) => {
-      var xhr = new XMLHttpRequest()
-      xhr.open('get', url)
-      xhr.onload = function () {
-        resolve(xhr.responseText)
-      }
-      xhr.onerror = function () {
-        reject(new Error('Network Error'))
-      }
-      xhr.send()
-    })
-  }
-```
-
-```javascript
-async function foo() {
-    console.log(1)
-    await 2
-    console.log(3)
-  }
-  foo()
-  console.log(4)
-
-//1 4 3
-```
-
-```javascript
-var div = document.querySelector('div')
-getComputedStyle(div, 'div::after')
-//选不到伪元素 纯粹装饰才用伪元素 但是能获取伪元素css样式
-
-async function foo(){
-  var a = await getJSON('a.json')
-}
-
-//并行加载 串行执行
-
-function loadStory(){
-  var story = await getJSON('stroy.json') //里面有各个chapter的json 的url
-  var chapterPromises = story.chapters.map(getJSON) //并行加载 创建5个promise
-
-  for (var chapterPromise of chapterPromises){
-    var chapter = await chapterPromise 
-    addToPage(chapter) //串行 执行
-  }
-}
-
-
-
-
-
-function makePizza(sauceType = 'red') {
-// cheese 等待 sauce 
-  let doughPromise = makeDough();
-  let saucePromise = makeSauce(sauceType);
-  let cheesePromise = saucePromise.then(sauce => {
-    return grateCheese(sauce.determineCheese());
-  });
-
-  return Promise.all([doughPromise, saucePromise, cheesePromise])
-    .then(([dough, sauce, cheese]) => {
-      dough.add(sauce);
-      dough.add(cheese);
-      return dough;
-    });
-}
-```
+* SNI 
 

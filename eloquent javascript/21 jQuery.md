@@ -64,6 +64,7 @@ $.ajax(
     data: { username: 'xxx', password: 'yyy' },
     headers: {}
   }, function (data) { })
+//现在ajax可以返回promise 可以then
 
 $.get('a.json').then(data => { })
 $.getJSON('a.json')   //直接把请求到的数据转换为JSON
@@ -72,7 +73,7 @@ $.getScript('a.js')//加载线上js运行
 
 
 $.camelCase('foo-bar-baz')
-//foobarbaz
+//fooBarBaz
 $.contains(['a', 'b', 'c'], b)
 //false 不是判断数组的
 $.contains(document.body, document.documentElement)
@@ -98,9 +99,10 @@ $.parseHTML('<div><span class="foo">aaa</span>bbb</div>')[0]
 * 返回类数组对象，叫做jQuery 实例 / 对象
 
 ```javascript
-$('div>p>span,em').css('border', '8px solid red')
+$('div>p>span,em').css('border', '8px solid red') //设置内联样式
 $('div>p>span,em').append('FOOFOFOFOFOFO')
-let a = $('div>p>span,em').parent()
+$('div>p>span,em').prepend('FOOFOFOFOFOFO')
+let a = $('div>p>span,em').parent() //父元素的集合
 a.addClass('foo')
 let a = $('div>p>span,em').next()
 ```
@@ -108,9 +110,69 @@ let a = $('div>p>span,em').next()
 ```javascript
 $('div>p').get()
 //返回数组
+
 $('div>p').get(5)
 //$('div>p')[5]
+
 $('div>p').index()
-$($0).index() //元素在父元素中的下标
+$($0).index() //元素在父元素中的下标 
+
+//给jQuery添加方法
+$.prototype.fooo
+$.fn.fooo
+
+$.noConflict() //$在jQuery加载之前指向的
+```
+
+```javascript
+$('body').ajaxSend(function(){}) //body里有ajax请求发出后触发
+$('body').load('a.html') //请求下载html放进body
+$('<div></div>').load('www.a.html #main').appendTo(document.body)
+//需要跨域
+
+$('h1').hide()
+$('h1').show()
+$('h1').toggle(time,callback) //切换显隐状态
+
+$($0).animate({width:100,height:100},time,callback)
+$($0).slideToggle() //滑动显隐
+
+$($0).slideUp().delay(1000).slideDown()
+//依次执行
+stop() //动画执行一半停止 
+```
+
+```javascript
+//绑定事件
+$('p').click(function(e){})
+//blur focus mousemove
+$('p').on('click',function(e){})
+$('p').click()
+//触发click事件
+
+//事件代理
+$('body').on('click dblclick mousemove','p.foo',function(e){})
+```
+
+```javascript
+$('p').append(function(){return this.textContent.split(' ')[0]})
+//接函数 添加返回结果
+
+$('p').wrap('<div class="WWW"></div>')
+//给每个p标签外 包裹
+unwrap()
+//去掉父元素标签
+$('p').wrapAll('<div class="WWW"></div>')
+//所有标签共用父元素
+
+$('pre').wrapAll('<div></div>').parent().html()
+//pre 标签 全放div里 再取div 的html
+
+empty() //清空元素内容 
+remove() //删除元素
+detach() //元素脱离dom但还在返回变量里
+
+$('p').eq(0)
+//取集合的第0项元素
 ```
 
