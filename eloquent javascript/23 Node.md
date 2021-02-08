@@ -78,7 +78,7 @@
 > ​	并不是说浏览器本身是单线程的
 >
 >  	我们执行的很多异步操作都是在浏览器的其他线程内执行，执行完成后的回调依然在主线程执行
->	
+>		
 >  	也就是说，异步必然借助多线程实现
 
 * 某些语言单线程实现异步（伪代码）
@@ -115,6 +115,10 @@ f1()
 f2()
 //async await 协程 穿插执行 不是完全并行 不同于线程
 ```
+### 版本
+
+* 偶数版本 长时间维护版本 lst  current不会加功能
+
 ### 命令行
 
 * 命令 tldr 查询命令最简单用法 `npm i -g tldr`       `tldr nc` 
@@ -123,7 +127,7 @@ f2()
   * .exit 退出
   * .break  前面输入错了  放弃前面的
   * .editor  输入方便
-  * .save     把控制台所有输入 存在一个文件
+  * .save path   把控制台所有输入 存在一个文件
   * .load      加载文件到控制台
   * process  变量
   * process.cwd() 当前工作目录
@@ -152,9 +156,11 @@ node --inspect=9999
 process.execArgv
 ```
 
+#### require 如何找到要加载的文件
+
 ```javascript
 //hello.js
-var foo = require('./foo') //相对于hello.js
+var foo = require('./foo') //相对于hello.js（当前文件）
 console.log(foo)
 console.log(process.argv)
 // ../父级文件夹  /根目录
@@ -168,7 +174,7 @@ module.exports = 'foo'
 
 ![image-20200803201748858](23%20Node.assets/image-20200803201748858.png)
 
-* 当require路径不像相对路径或绝对路径时，require就会认为它指向一个内置模块或一个安装在node_modules 文件夹里的模块 
+* 当require路径不像相对路径或绝对路径时，require就会认为它指向一个内置模块，一个安装在node_modules 文件夹里的模块 
 
 ### 调试
 
@@ -176,17 +182,12 @@ module.exports = 'foo'
 * chrome
   ```bash
   node --inspect-brk=9229 hello.js
-  ```
-
+  brk 停在代码第一行
+```
+  
   > 浏览器地址 chrome://inspect configure 写端口
 
 ![image-20200803203506311](23%20Node.assets/image-20200803203506311.png)
-
-```bash
-$npm install figlet
-$npm install lodash
-$npm i -g cnpm //不cpm直接把npm 换源
-```
 
 ```javascript
 debugger
@@ -196,8 +197,9 @@ var efile = require('elife')
 //找内置模块(’fs‘，’http‘) 
 //找路径 ('./')('../')('/')('C:/foo')  找方法同第三方
 //第三方去node_modules找
-//C:\Users\荆纬宸\Desktop\新建文件夹\node_modules\
-//1.elife.js 2.elife.json  3.解析elife\package.json 找main字段 ...\elife\[main]  都不是进去找 elife\index.js
+//C:\Users\荆纬宸\Desktop\新建文件夹\node_modules\  
+//（当前文件夹hello.js的路径 的node_modules）
+//1.elife.js 2.elife.json  3.解析elife\package.json 找main字段(这个路径相对于package.json) ...\elife\[main]  都不是进去找 elife\index.js
 // C:\Users\荆纬宸\Desktop\mode_modules\elife
 //依次向上找
 console.log(foo)
@@ -259,6 +261,12 @@ console.log(process.argv[2] + ': ' + primes.join(' '))
   * 终端输入 chmod +x factor   
   * 文件头 \#!/usr/local/bin  + code
   * 终端 ./factor 100
+
+```bash
+$npm install figlet
+$npm install lodash
+$npm i -g cnpm //不cpm直接把npm 换源
+```
 
 #### figlet
 
