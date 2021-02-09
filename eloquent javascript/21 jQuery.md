@@ -176,3 +176,45 @@ $('p').eq(0)
 //取集合的第0项元素
 ```
 
+```javascript
+class jQuery {
+  static parseHTML(code) {
+    var div = document.createElement('div')
+    div.innerHTML = code
+    return Array.form(div.childNodes)
+  }
+  constructor(selector) {
+    var elements = document.querySelectorAll(selector)
+    for (var i = 0; i < elements.length; i++) {
+      this[i] = elements[i]
+    }
+    this.length = elements.length
+  }
+  on(eventName, selector, handler) {
+    this.addEventListener(eventName, function (e) {
+      if (e.target.matches(selector){
+        handler.call(e.target, e)
+      }
+    })
+  }
+  each(func) {
+    for (var i = 0; i < this.length; i++) {
+      func.call(this[i], i, this[i])
+    }
+  }
+  css(propName, propVal) {
+    for (var i = 0; i < this.length; i++) {
+      this[i].style[propName] = propVal
+    }
+    return this
+  }
+  html(val) {
+    if (val === undefined) {
+      return this[0].innerHTML
+    } else {
+      this[0].innerHTML = val
+    }
+  }
+}
+```
+

@@ -206,7 +206,7 @@ console.log(foo)
 console.log(process.argv)
 
 require('elife/foo')
-//定位elife文件夹 然后再按照上面的规则对foo
+//定位node_modules里面的elife文件夹 然后再按照上面的规则对foo
 require('lodash/chunk.js')
 ```
 
@@ -257,9 +257,9 @@ let primes = countPrimes(n)
 console.log(process.argv[2] + ': ' + primes.join(' '))
 ```
 
-* shebang  
+* shebang   linux 系统里 	文件名factor 不需要后缀
   * 终端输入 chmod +x factor   
-  * 文件头 \#!/usr/local/bin  + code
+  * 文件头 \#!/usr/local/bin/node （#!加上which node 的路径加上/node）
   * 终端 ./factor 100
 
 ```bash
@@ -299,7 +299,7 @@ foo()
 ```javascript
 var fs = require('fs')
 
-fs.readFile('hello.js', 'utf8', (err, result) => {
+fs.readFile('hello.js', 'utf8', (err, result) => {  //如果要buffer就不传utf-8
   if (err) {
     console.log(err)
   } else {
@@ -324,8 +324,8 @@ console.log(fs.stat('hello.js', (err, stat) => {
   //status 里有mode mode.toString(2) bash里用ll查看
   // -rw-r--r
   // drwxr-r--r
-  // 第一个是d表示是文件夹 文件的第一个是‘-’   rw表示可读可写
-  //110 110 110  可读可写不可执行 3组是超级用户 当前用户 用户组的权限
+  // 第一个是d表示是文件夹 第一个是‘-’表示文件   rw表示可读可写 -r可执行
+  //最后9位 110 110 110  可读可写不可执行 3组是超级用户 当前用户 用户组的权限
 
 
 //bash
@@ -334,7 +334,7 @@ console.log(fs.stat('hello.js', (err, stat) => {
 fs.renameSync('foo.js','test2/foo.js')
   //相当于剪切
   fs.renameSync('test2/foo.js','foo333.js')
-  //链式存储断开 没有删除
+  //链式存储断开 没有删除 所以文件删除可以恢复
 ```
 
 ```javascript
@@ -379,6 +379,8 @@ function readdirP(...args) {
   })
 }
 
+//util模块 里两个函数 promisify callbackify
+//把一个回调函数promise化
 function promisify(f) {
   return function (...args) {
     return new Promise((resolve, reject) => {
@@ -427,7 +429,7 @@ fs.readFile('hello.js').then(content => {
 ```javascript
 let fs = require('fs')
 fs.fchmod(fd, mode, callback)
-//整数描述一个文件 文件描述符 fd   这个方法改变文件权限
+//整数描述一个文件 fd：文件描述符    这个方法改变文件权限
 fs.open('a.txt', 'wr', callback(err,fd))
 //以读写模式打开文件 分配新的文件描述符
 fs.read()
@@ -438,6 +440,8 @@ fs.symlink()
 // 软连接是指向上一个文件信息 被指向的文件信息被删除 就无法访问了
 fs.statSync('a.txt') //里面有nlink 表示这个文件被几个文件信息指向
 ```
+
+#### Path
 
 ```javascript
 const path = require('path')
@@ -469,19 +473,40 @@ path.relative('/foo/bar', '/foo/baz/baa')
 // 算出两个路径间的相对值
 // '../baz/baa'
 // '/foo/bar'+'../baz/baa' = /foo/baz/baa
+```
 
-path.resolve('/foo/bar', '..', 'baz')
-// '/foo/baz'  与join相似
-path.resolve('b/foo/bar', '../../../a/foo/baz/baa')
-// 'C:\\Users\\荆纬宸\\Desktop\\a\\foo\\baz\\baa'
+#### path.join and path.resolve
+
+```javascript
+//resolve 把/作为根目录
+path.resolve('/b')
+//'C:\\b'
+path.resolve('b')
+//'C:\\Users\\荆纬宸\\Desktop\\今日\\start\\b'
+//resolve在传入非/路径时，会自动加上当前目录形成一个绝对路径，而join仅仅用于路径拼接
+
+path.join('a/b','c')
+//'a\\b\\c'
+path.join('a/b','/c')
+// 'a\\b\\c'
+path.join('a/b/','/c')
+// 'a\\b\\c'
+path.join('a/b/','c')
+// 'a\\b\\c'
+path.join('/a/b/','c')
+//'\\a\\b\\c'
+
+
+
 console.log(path.join('foo/', '/bar/', '../baz', 'hehe'))
 //foo\baz\hehe
-console.log(path.resolve('foo/', '/bar/', '../baz', 'hehe'))
-//C:\baz\hehe
-console.log(path.join('a', 'b', 'c', 'hehe'))
-//a\b\c\hehe
-console.log(path.resolve('a', 'b', 'c', 'hehe'))
-//C: \Users\荆纬宸\Desktop\新建文件夹\a\b\c\hehe
+ path.resolve('foo/')
+// 'C:\\Users\\荆纬宸\\Desktop\\今日\\start\\foo'
+ path.resolve('foo/', '/bar/')
+// 'C:\\bar'  前面非/路径 遇见第一个/路径 归根目录 
+ path.resolve('foo/', '/bar/baz/', '../bam', 'hehe')
+// 'C:\\bar\\bam\\hehe'
+
 
 path.parse('/foo/bar/baz/aaa.png')
 // {
@@ -566,21 +591,24 @@ URL {
   port: '4433',
   pathname: '/foo/bar.html',
   search: '?a=1&b=2',
-  searchParams: URLSearchParams { 'a' => '1', 'b' => '2' },
+  searchParams: URLSearchParams { 'a' => '1', 'b' => '2' }, //不是对象 类似map
   hash: '#foiwef'
 }
 
 myurl.searchParams.append('c', 333)
+myurl.toString()
 
 url.resolve('http://www.baidu.com/foo/bar/baz','../images/static/bg.png')
 //'http://www.baidu.com/foo/images/static/bg.png'
 //在参数一路径 访问参数二 访问的地址是
 ```
 
+#### querystring 模块
+
 ```javascript
 querystring.parse('foo=1&bar=2')
 //[Object: null prototype] { foo: '1', bar: '2' }
-querystring.parse('foo=1; bar=2; baz=3','; ')
+querystring.parse('foo=1; bar=2; baz=3','; ') //设定分隔符
 //[Object: null prototype] { foo: '1', bar: '2', baz: '3' }
 querystring.parse('foo:1, bar:2, baz:3',', ',':')
 //[Object: null prototype] { foo: '1', bar: '2', baz: '3' }
@@ -603,9 +631,11 @@ qs = require('qs')
 qs.parse('foo[bar]=8')
 //{ foo: { bar: '8' } }
  qs.parse('foo[bar]=8&foo[baz]=9')
-{ foo: { bar: '8', baz: '9' } }
-
+{ foo: { bar: '8', baz: '9' } } 
+//拓展url编码
 ```
+
+#### OS模块
 
 ```javascript
 os.uptime()/86400
@@ -615,13 +645,16 @@ os.EOL
 os.signals 
 //给进程发信号
 
+os.version()
+os.userInfo()
+
 os.type()
 //'Windows_NT'
 os.totalmem()
-//17054289920
+//17054289920  内存
 os.networkInterfaces()
 //网卡信息
-os.hostname()
+os.hostname() //计算机名
 os.cpus()
 os.freemem()
 //可用内存
@@ -637,7 +670,14 @@ os.freemem()
 
 ![image-20200804200022158](23%20Node.assets/image-20200804200022158.png)
 
+#### modules 模块
+
 * 后缀名改为mjs 可以用import
+* 后缀js type字段要加module
+
+#### Global模块
+
+* node中的timer与unref
 
 ```javascript
 id = setTimeout(()=>console.log(1),5000)
@@ -666,8 +706,10 @@ var id = setInterval(() => {
   console.log(count)
 }, 1000)
 //server 关闭 count还是照样输出
+
 id.unref() 
 //只剩下timer id运行 就直接退出
+
 setTimeout(() => {
   server.close()
 }, 10000)
@@ -735,7 +777,7 @@ function listFilesCB(dirPath, cb) {
   let workPath = path.resolve(dirPath)
   fs.readdir(workPath, (err, names) => {
     if (err) {
-      console.log(err)
+      cb(err)
       return
     }
     if (names.length == 0) {
@@ -744,6 +786,10 @@ function listFilesCB(dirPath, cb) {
     for (let name of names) {
       let filePath = path.join(workPath, name)
       fs.stat(filePath, (err, stat) => {
+        if (err) {
+      		cb(err)
+      		return
+    		}
         if (stat.isFile()) {
           result.push(filePath)
           count++
@@ -764,41 +810,55 @@ function listFilesCB(dirPath, cb) {
 }
 
 listFilesCB('./test2', (err, files) => {
+  if(err){
+    console.log(err)
+  }
   console.log(files)
 })
 
 
-function listFilesCB2(dirPath, cb) {
-  let result = []
+function listFilesCB2(dirpath, cb) {
   let count = 0
-  let workPath = path.resolve(dirPath)
-  fs.readdir(workPath, { withFileTypes: true }, (err, infos) => {
+  let result = []
+  let workpath = path.resolve(dirpath)
+  fs.readdir(workpath, { withFileTypes: true }, (err, infos) => {
     if (err) {
-      console.log(err)
-      return
-    }
-    for (let info of infos) {
-      let filePath = path.join(workPath, info.name)
-      if (info.isFile()) {
-        result.push(filePath)
-        count++
-        if (count == infos.length) {
-          cb(null, result)//忽略错误
-        }
-      } else if (info.isDirectory()) {
-        listFilesCB2(filePath, (err, files) => {
-          result.push(...files)
+      cb(err)
+    } else if (infos.length == 0) {
+      cb(null, result)
+    } else {
+      for (let info of infos) {
+        let fileName = path.join(workpath, info.name)
+        if (info.isFile()) {
+          result.push(fileName)
           count++
-          if (count == infos.length)
+          if (count == infos.length) {
             cb(null, result)
-        })
+          }
+        } else if (info.isDirectory()) {
+          listFiles(fileName, (err, innerfiles) => {
+            if (err) {
+              cb(err)
+            } else {
+              result.push(...innerfiles)
+              count++
+              if (count == infos.length) {
+                cb(null, result)
+              }
+            }
+          })
+        }
       }
     }
   })
 }
 
-listFilesCB2('./test2', (err, files) => {
-  console.log(files)
+listFilesCB2('vue', (err, result) => {
+  if (err) {
+    console.log('ERROR', err)
+  } else {
+    console.log(result)
+  }
 })
 ```
 
