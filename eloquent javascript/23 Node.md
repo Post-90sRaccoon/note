@@ -878,7 +878,7 @@ listFilesCB2('vue', (err, result) => {
           if (info.isFile()) {
             return fullNames[i]
           } else if (info.isDirectory()) {
-            return listFilesP(fullNames[i])
+            return listFilesP(fullNames[i]) //这里可能是数组
           }
         })
         return Promise.all(ary)
@@ -943,6 +943,7 @@ async function a() {
 }
 a()
 
+//异步加载 同步接收
 async function listFilesA(dirPath) {
   var result = []
   var fullDirPath = path.resolve(dirPath)
@@ -973,13 +974,51 @@ listFilesA('./test2').then(result => {
 ```
 
 ```javascript
-let a =[1,2,3,4,5,6]
-for(var i in a){
-console.log(a[i])
+let path = require('path')
+let fs = require('fs')
+
+let entryDir = path.resolve('.') //当前目录做起点
+
+function tree(dirPath, depth = 0) {
+  let fullDirPath = path.resolve(dirPath)
+  let fileEntries = fs.readdirSync(dirPath, { withFileTypes: true })
+
+  for (let fileEntry of fileEntries) {
+    if (fileEntry.isFile()) {
+      console.log('    '.repeat(depth) + fileEntry.name)
+    } else if (fileEntry.isDirectory()) {
+      console.log('    '.repeat(depth) + '|--' + fileEntry.name + '/')
+      tree(path.join(fullDirPath, fileEntry.name), depth + 1)
+    }
+  }
 }
+
+tree(entryDir)
 ```
 
 ### The HTTP module
+
+#### http 模块发请求
+
+```javascript
+request = http.get(url, (response) => {
+  console.log(response.statusCode)
+  response.on('data', data => {
+    console.log(data.toString())
+  })
+})
+request.end()
+
+request = http.request(url, { method: 'post' }, function (res) { })
+request.write('hello')
+request.end()
+
+//发请求一般使用axios
+//npm i axios
+axios.get('http://www.baidu.com').then(console.log)
+```
+
+#### http模块服务器
 
 ```javascript
 var PORT = 8080
@@ -1013,7 +1052,7 @@ server.on('request', (req, res) => {
   count++
   console.log(req.method, req.url)
   console.log(req.headers['user-agent'])
-  res.writeHead(200, { "Content-Type": 'text / html;charset=UTF-8 ' })
+  res.writeHead(200,'OK', { "Content-Type": 'text / html;charset=UTF-8 ' })
 
   res.write('<h1>It works!</h1>')
   res.write(`You are the ${count}th visitor of this site`)
@@ -1199,13 +1238,6 @@ server.listen(PORT, '127.0.0.1', () => {
   })
   ```
 
-  ```javascript
-  path.resolve('foo')
-  // C:\\x\\xx\\foo
-  path.resolve('foo','/bar')
-  //C:\\bar  因为/是绝对路径
-  ```
-
 * 安全和用户地址没输入/
 ```javascript
 var fs = require('fs')
@@ -1215,9 +1247,12 @@ var http = require('http')
 
 var baseDir = path.resolve(__dirname, './test2')
 //dirname 当前文件所在文件夹名字
-//不然在C:\Users\荆纬宸\Desktop\目录下执行 node ./新建文件夹.test.js 就不对了
+//路径 c:/node/test  node server.js 
+//cd.. node test/server.js   只靠resolve路径是错误的 所以需要__dirname
+
 
 //安全问题 http://localhost:8080/../../../
+//浏览器自动取消.. 但是可以nc 127.0.0.1 80 GET /../../../ 
 
 var server = http.createServer((req, res) => {
   console.log(req.method, req.url)

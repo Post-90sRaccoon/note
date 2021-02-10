@@ -1,6 +1,6 @@
 ### Stream
 
-* 可写流 所有可写流都有write方法 可以传入String或者Buffer
+* 可写流 所有可写流都有write方法 可以传入String 或者Buffer
 * end() 结束流 end里面参数在结束前被写入 
 * 这些方法可以回调
 
@@ -26,6 +26,7 @@ writestream.end()
 let fs = require('fs')
 
 let rs = fs.createReadStream('./test2/2020-07-17 15-31-03-跨域方式总结：JSONP.mkv')
+//.是当前工作目录 __dirname是文件所在目录
 rs.on('data', data => {
   console.log(data)
 })  //被动接受数据
@@ -36,7 +37,7 @@ rs.on('data', data => {
  rs.on('end',()=>{}) //数据读完后触发
 
 console.log(rs.read(5))
-//读后序5个字节 从缓冲区删除  数字大于缓冲区 返回null 但是再次读可以读到
+//读后序5个字节 从缓冲区删除  数字大于缓冲区 返回null 但是再次读可以读到 增大缓冲区 加入新数据
 ```
 
 ##### 复制文件
@@ -155,7 +156,7 @@ myrs.read(5)
 
 ![image-20200806213347425](24%20Node2.assets/image-20200806213347425.png)
 
-* 流里填数据的
+* _read流里填数据的 我们写的  read自带的 读出数据
 * read(5) 是读取数据的
 
 ![image-20200806213413233](24%20Node2.assets/image-20200806213413233.png)
@@ -267,7 +268,8 @@ http.createServer(function (request, response) { //read write
     response.end()
   })
 
-  request.pipe(toUpperCase).pipe(response)
+  //双工流
+  request.pipe(toUpperStream).pipe(response)
 }).listen(8000)
 
 //客户端
@@ -350,7 +352,7 @@ var myTransform = new Transform({
 process.stdin.pipe(myTransform).pipe(process.stdout)
 ```
 
-#### 简单的nc
+#### 实现简单的nc
 
 ```javascript
 node test.js www.baidu.com 80
@@ -365,6 +367,10 @@ var conn = net.connect(port, domain, () => {
   process.stdin.pipe(conn).pipe(process.stdout)
 })
 ```
+
+#### 用流写静态文件服务器
+
+> 用fs.createReadStream(targetPath).pipe(res)替换readfile
 
 ```javascript
 var fs = require('fs')
@@ -470,3 +476,177 @@ function renderIndexPage(entries, parentDir, url) {
 ```
 
 ![image-20200808131619078](24%20Node2.assets/image-20200808131619078.png)
+
+#### 文件服务器
+
+> npm i mime
+
+```javascript
+let http = require('http')
+let fs = require('fs')
+
+let methods = Object.create(null)
+
+http.createServer((req, res) => {
+  function respond(code, body, type) {
+    if (!type) type = "text/plain";
+    res.writeHead(code, { "Content-Type": type })
+    if (body && body.pipe) body.pipe(res)
+    else resp.end(body)
+  }
+  if (req.method in methods) {
+    methods[req.method](urlToPath(req.url), respond, req)
+  } else {
+    respond(405, "Method" + req.method + "not allowed.")
+  }
+}).listen(80)
+
+function urlToPath(url) {
+  // let path = url.parse(url).pathname
+  //忽略../.. 安全
+  let path = new URL(url).pathname
+  return "." + decodeURIComponent(path)
+}
+
+//npm mime 模块 告诉多种拓展名对应的mimeType
+
+methods.GET = function (path, respond) {
+  fs.stat(path, (err, stats) => {
+    if (err && err.code == 'ENOENT') {
+      respond(404, 'File not found')
+    } else if (err) {
+      respond(500, error.toString())
+    } else if (stats.isDirectory()) {
+      fs.readdir(path, { withFileTypes: true }, (err, dirEntries) => {
+        if (err) {
+          respond(500, error.toString())
+        } else {
+          respond(200, dirEntries.map(entry => entry.isDirectory() ? entry.name + '/' : entry.name).join('\n'))
+        }
+      })
+    } else {
+      respond(200, fs.createReadStream(path), require("mime").getType(path))
+    }
+  })
+}
+
+methods.DELETE = function (path, respond) {
+  fs.stat(path, (err, stats) => {
+    if (err && err.code == 'ENOENT') {
+      respond(204) //删不存在的文件 返回成功
+    } else if (err) {
+      respond(500, error.toString())
+    } else if (stats.isDirectory()) {
+      fs.rmdir(path, respondErrorOrNothing(respond)) //递归删除
+    } else {
+      fs.unlink(path, respondErrorOrNothing(respond))
+    }
+  })
+}
+
+function respondErrorOrNothing(respond) {
+  return function (err) {
+    if (err) {
+      respond(500, err.toString())
+    } else {
+      respond(204)
+    }
+  }
+}
+
+methods.PUT = function (path, respond, req) {
+  let outStream = fs.createWriteStream(path)
+  outStream.on('error', err => {
+    respond(500, err.toString())
+  })
+  outStream.on('finish', function () {
+    respond(204)
+  })
+  req.pipe(outStream)
+}
+
+//curl http://localhost/file.txt
+//curl -X PUT -d hello http://localhost/file.txt
+//curl -X DELETE http://localhost/file.txt
+```
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    #upload-label {
+      text-decoration: underline;
+      color: blue;
+      cursor: pointer;
+    }
+
+    #upload-label:active {
+      color: red;
+    }
+  </style>
+</head>
+
+<body>
+  <input type="text" id="path" value="/">
+  <button id="open">打开</button>
+  <label id="upload-label">上传<input hidden type="file" id="upload"></label>
+  <div id="list"></div>
+</body>
+<script>
+  let base = 'http://localhost:8000'
+  let list = document.querySelector('#list')
+  let open = document.querySelector('#open')
+  let path = document.querySelector('#path')
+  document.addEventListener('DOMContentLoaded', function () {
+    openfunc('/')
+    open.onclick = () => {
+      let pathval = path.value
+      openfunc(pathval)
+    }
+    list.onclick = function (e) {
+      if (e.target.matches('a.dir')) {
+        e.preventDefault()
+        let temp = path.value + this.getAttribute('href')
+        path.value = temp
+        open(temp)
+      }
+    }
+  })
+  function openfunc(path) {
+    get(base + path).then(str => {
+      list.innerHTML = str.split('\n').map(name => {
+        if (name.endsWith('/')) {
+          return `<a class="dir" href="${name}">${name}</a><br>`
+        } else {
+          return `<a class='file' href="${name} download=${name}">${name}</a><br>`
+        }
+      }).join(' ')
+    })
+  }
+  function get(url) {
+    return new Promise((resolve, reject) => {
+      let xhr = new XMLHttpRequest()
+      xhr.get('GET', url)
+      xhr.onload = () => {
+        if (xhr.status < 400) {
+          resolve(xhr.responseText)
+        } else {
+          reject(xhr.status)
+        }
+      }
+      xhr.onerror = e => {
+        reject(error)
+      }
+      xhr.send()
+    })
+  }
+</script>
+
+</html>
+```
+

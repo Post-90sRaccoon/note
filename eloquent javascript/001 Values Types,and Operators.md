@@ -42,7 +42,7 @@
 
 * typeof
 
-###Boolean value
+### Boolean value
 
 * true and false
 
@@ -94,7 +94,7 @@
 
 ### Automatic Type Conversion
 
-==5 * nul==l               0
+==5 * null==              0
 
 5* undefined    NaN
 
