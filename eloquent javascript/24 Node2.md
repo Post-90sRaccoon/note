@@ -570,6 +570,113 @@ methods.PUT = function (path, respond, req) {
 //curl -X DELETE http://localhost/file.txt
 ```
 
+#### promises版本
+
+```javascript
+var http = require("http"), fs = require("fs");
+var Promise = require("promise");
+
+var methods = Object.create(null);
+
+http.createServer(function (request, response) {
+  respondTo(request).then(function (data) {
+    response.writeHead(data.code, { "Content-Type": data.type || "text/plain" });
+    if (data.body && data.body.pipe)
+      data.body.pipe(response);
+    else
+      response.end(data.body);
+  }, function (error) {
+    response.writeHead(500);
+    response.end(error.toString());
+    console.log("Response failed: ", error.stack);
+  });
+}).listen(8000);
+
+function respondTo(request) {
+  if (request.method in methods)
+    return methods[request.method](urlToPath(request.url), request);
+  else
+    return Promise.resolve({
+      code: 405,
+      body: "Method " + request.method + " not allowed."
+    });
+}
+
+function urlToPath(url) {
+  var path = require("url").parse(url).pathname;
+  var decoded = decodeURIComponent(path);
+  return "." + decoded.replace(/(\/|\\)\.\.(\/|\\|$)/g, "/");
+}
+
+
+
+var fsp = {};
+["stat", "readdir", "rmdir", "unlink", "mkdir"].forEach(function (method) {
+  fsp[method] = Promise.denodeify(fs[method]);
+});
+//denodeify promisify
+
+function inspectPath(path) {
+  return fsp.stat(path).then(null, function (error) {
+    if (error.code == "ENOENT") return null;
+    else throw error;
+  });
+}
+
+methods.GET = function (path) {
+  return inspectPath(path).then(function (stats) {
+    if (!stats) // Does not exist
+      return { code: 404, body: "File not found" };
+    else if (stats.isDirectory())
+      return fsp.readdir(path).then(function (files) {
+        return { code: 200, body: files.join("\n") };
+      });
+    else
+      return {
+        code: 200,
+        type: require("mime").lookup(path),
+        body: fs.createReadStream(path)
+      };
+  });
+};
+
+var noContent = { code: 204 };
+function returnNoContent() { return noContent; }
+
+
+methods.DELETE = function (path) {
+  return inspectPath(path).then(function (stats) {
+    if (!stats)
+      return noContent;
+    else if (stats.isDirectory())
+      return fsp.rmdir(path).then(returnNoContent);
+    else
+      return fsp.unlink(path).then(returnNoContent);
+  });
+};
+
+
+methods.PUT = function (path, request) {
+  return new Promise(function (success, failure) {
+    var outStream = fs.createWriteStream(path);
+    outStream.on("error", failure);
+    outStream.on("finish", success.bind(null, noContent));
+    request.pipe(outStream);
+  });
+};
+
+methods.MKCOL = function (path, request) {
+  return inspectPath(path).then(function (stats) {
+    if (!stats)
+      return fsp.mkdir(path).then(returnNoContent);
+    if (stats.isDirectory())
+      return noContent;
+    else
+      return { code: 400, body: "File exists" };
+  });
+};
+```
+
 ```html
 <!DOCTYPE html>
 <html lang="en">
@@ -648,5 +755,108 @@ methods.PUT = function (path, respond, req) {
 </script>
 
 </html>
+```
+
+#### Buffer
+
+```javascript
+b = Buffer.alloc(1)
+//分配1个字节 <Buffer 00> 16进制 一个数代表4位
+b[0]
+//访问第一个字节
+b.writeInt16BE(1000, 0)
+//写入1000 从0号位置写
+b.writeDouble()
+b.writeFloat()
+
+b.readInt16BE(0)
+b.readUInt16BE(0)
+// u unsigned 无符号数
+
+b.swap16()
+//两个两个的字节互换位置
+b.base64write('5oiR')
+b.toString('base64')
+b.toString('hex')
+
+//对象流 构建10个对象
+objReadStream = new Readable({
+  objectMode:true,
+  highWaterMark:10,
+  read(){
+    this.push({a:1})
+  }
+})
+```
+
+#### 事件发生触发器
+
+```javascript
+let events = require('events')
+let { EventEmitter } = events.EventEmitter
+
+let eventer = new EventEmitter()
+
+eventer.addListener('foo', (a, b, c) => {
+  console.log(a, b, c)
+})
+
+
+// 浏览器里触发click eventer.dispatchEvent(new MouseEvent('click')) 
+eventer.emit('foo', 1, 2, 3)
+
+//node里几乎所有能用on 绑定事件的对象几乎都是EventEmitter的子类
+```
+
+```javascript
+class EventEmitter {
+  constructor() {
+    this._eventMaps = Object.create(null)//由事件名称映射到事件处理函数
+  }
+  on(eventName, func) {
+    if (eventName in this._eventMaps) {
+      this._eventMaps[eventName].push(func)
+    } else {
+      this._eventMaps[eventName] = [func]
+    }
+    return this
+  }
+  emit(eventName, ...eventArgs) {
+    let handlers = this._eventMaps[eventName]
+    if (handlers) { //如果事件绑定了函数
+      for (handler of handlers) {
+        handler.call(this, ...eventArgs)
+      }
+      return true
+    } else {
+      return false
+    }
+  }
+  off(eventName, handler) {
+    if (!handler) {
+      delete this._eventMaps[eventName]
+    } else {
+      if (this._eventMaps[eventName]) { //绑定过事件
+        this._eventMaps[eventName] = this._eventMaps[eventName].filter(it => it != handler)
+        if (this._eventMaps[eventName].length == 0) {
+          delete this._eventMaps[eventName]
+        }
+      }
+    }
+    return this
+  }
+}
+
+class Readstream extends EventEmitter {
+
+}
+
+let rs = new Readstream()
+rs.on('foo', function (a, b) { //事件处理函数
+  console.log(this) //rs
+})
+
+rs.emit('foo', 1, 2)
+//emit里面的this 被传给了事件处理函数
 ```
 

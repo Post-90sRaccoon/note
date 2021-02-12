@@ -1,4 +1,4 @@
-### 事件循环
+### node事件循环
 
 ```javascript
 setTimeout(() => {
@@ -42,7 +42,6 @@ console.log(2)
 
 * 火焰图 浏览器performance  点击ctrl+e  stop 点击上面mermory
 
-* Buffer.from('foo')  Buffer.alloc()
 
 > 什么是事件循环 事件循环允许Node.js执行非阻塞异步io操作 尽管js是单线程 把异步操作从主线程拿掉
 >

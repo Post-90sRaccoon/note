@@ -175,10 +175,10 @@ function mergeSort(ary) {
     }
   }
   while (i < left.length) {
-    arr[k++] = right[i++]
+    ary[k++] = left[i++]
   }
   while (j < right.length) {
-    arr[k++] = right[j++]
+    ary[k++] = right[j++]
   }
   return ary
 }
