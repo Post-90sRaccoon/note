@@ -93,7 +93,7 @@ fs.readFile('a.txt',(g) => {
 //require date.now  settimeout readfile
 
 //setTimeout T时间执行 进入timers 进入poll 
-//100ms内 readfile读完 执行g  g结束 执行f
+//100ms内 readfile读完 执行g(i/o的回调)  g结束 执行f
 //等100ms 如果readfile 没读完 执行f 读完了 执行g  
 ```
 
@@ -284,7 +284,7 @@ this.listen = function (port) {
   listen()
 
   process.nextTick(() => {
-    this.emit('listening')
+    this.emit('listening') 
   })
 }
 
@@ -442,7 +442,7 @@ readFile('aaa', () => {
     Promise.resolve().then(f)
   })
 })
-// 3 打不出来 类似nextTick()
+// 3打不出来 类似nextTick() 一直在执行promise 
 ```
 
 ```javascript
@@ -512,8 +512,7 @@ readFile('fwoeif', () => {
     console.log(4)
   })
 })
-// 1 3 2 4 nextTick添加nextTick依然在Promise后面
-
+// 1 3 2 4 nextTick添加nextTick依然在Promise前面
 ```
 
 ```javascript
@@ -533,6 +532,10 @@ async function foo() {
   console.log(1)
   var a = await Promise.resolve(2)
   console.log(a)
+  //等价于
+  //var a = await Promise.resolve(2).then(
+  //  console.log(a)
+  //) 
 }
 
 foo()
@@ -578,7 +581,7 @@ Promise.resolve().then(() => { //打印完3 挂then
 // 1 3 6 2 4
 
 var a = await new Promise((resolve,reject)=>{
-    new Bluebird((resolve, reject) => resolve(2)).then(value=>{
+     new Bluebird((resolve, reject) => resolve(2)).then(value=>{
       resolve(value)
     })
 ```
@@ -589,7 +592,7 @@ var a = await new Promise((resolve,reject)=>{
   new Promise(function executor(resolve) {
     console.log(1)
     for (var i = 0; i < 10000; i++) {
-      i == 9999 && resolve()  //最后resolve
+      i == 9999 && resolve()  //没有return console.log(2)也会运行
     }
     console.log(2)
   }).then(function () {
@@ -602,6 +605,8 @@ var a = await new Promise((resolve,reject)=>{
 ```
 
 ![image-20200810215934452](Node3.assets/image-20200810215934452.png)
+
+* 如果promise一开始就确定了状态的话 整个函数返回结果晚于promise的结果 
 
 ```javascript
 setTimeout(() => { console.log('a') })
@@ -617,7 +622,7 @@ console.log('e')
 
 async function async1() {
   console.log('a')
-  await async2()
+  await async2()           //到这里不能直接暂停 还要运行进去
   console.log('b')
 }
 
@@ -726,6 +731,7 @@ nextTick(() => {
 Promise.resolve().then(() => { console.log(4) })
 Promise.resolve().then(() => { console.log(5) })
 // 1 2 4 5 3
+
 nextTick(() => {
   console.log(1)
   nextTick(() => console.log(3)) //浏览器里 不区分 不会放在nextTick队列
@@ -748,25 +754,13 @@ nextTick(() => {
 })
 
 nextTick(() => {
-  console.log(2)
-})
-
-Promise.resolve().then(() => { console.log(4) })
-Promise.resolve().then(() => { console.log(5) })
-// 1 2 4 5 3
-nextTick(() => {
-  console.log(1)
-  nextTick(() => console.log(3)) //浏览器里 不区分 不会放在nextTick队列
-})
-
-nextTick(() => {
   alert(111) //虽然已经执行完 textCntent变了 但是页面没有重绘
   console.log(2)
 })
 $0.textContent = 'aaa'
 Promise.resolve().then(() => { console.log(4) })
 Promise.resolve().then(() => { console.log(5) })
-setTimeout(() => { alert(222); console.log(6) }) //这里重绘 空闲时间已经重绘了
+setTimeout(() => { alert(222); console.log(6) }) //这里重绘 微任务和宏任务之间已经重绘了
 //  1  2 4 5 3 2192（google浏览器 微任务结束后才返回） 6
 ```
 
@@ -813,7 +807,7 @@ Promise.resolve().then(function foo() {
 
 ```javascript
 new Promise(resolve1 => {
-  resolve1()  //没有返回值 接着往下执行 如果返回下面也不执行了 只打印2
+  resolve1()  //没有return 接着往下执行 如果返回下面也不执行了 只打印2
   new Promise(resolve2 => { resolve2() }).then(() => console.log(1))
 }).then(() => console.log(2))
 // 1 2  先挂了then
