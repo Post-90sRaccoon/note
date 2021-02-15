@@ -30,7 +30,7 @@ var server = http.createServer()
 commonLogic(req, res)
 server.on('request', (req, res) => {
   console.log(req.method, req.url)
-  if (req.method) {
+  if (req.method in methods) {
     methods[req.method](req, res)
   } else {
     res.end('method not support')
@@ -219,7 +219,7 @@ server.get('/question/:id', (req, res, next) => {
 //http://localhost:8000/question/34234554?a=1&b=2
 //34234554 起名字叫id 匹配的内容不包括id
 //:匹配出来的对象叫做params
-//server.use('/qusetion/:id/bar 匹配不了了
+//server.use('/qusetion/:id/bar 匹配不了了 
 //http://localhost:8000/question/34234554/bar?a=1&b=2 同理 这样也匹配不了
 
 server.get('/question/:qid/answer/:aid', (req, res, next) => {
@@ -229,6 +229,7 @@ server.get('/question/:qid/answer/:aid', (req, res, next) => {
   res.end()
 })
 //http://localhost:8000/question/马保国/answer/牛逼?a=1&b=2#xxx
+//{a:1,b:2}
 //#的东西就不发往服务器
 ```
 
@@ -324,7 +325,7 @@ server.use((req, res, next) => {
 
 
 server.use(express.json())
-//express.json 返回一个中间件 把请求体当json解析
+//express.json 返回一个中间件 如果请求头说了是json 把请求体当json解析 挂在req.body上
 server.use(express.urlencoded({ extended: true }))
 //解析请求体是url编码的时候 解析并且挂在body上  true 解析扩展编码
 ```
@@ -393,7 +394,7 @@ function urlencoded(options) { //参数是一个对象
   }
 }
 
-function static(dir) {
+function static(dirPath) {
   return (req, res, next) => {
     let targetPath = path.join(dirPath, req.url)
     // fs.readFile(targetPath,(err,content)=>{
@@ -478,7 +479,7 @@ server.use((err,req,res,next)=>{}) //处理错误要四个参数
   })
   
   app.use('/admin',admin) //use 后面接收函数 说明express() 返回一个函数
-   //被app 挂载到这个路径之下
+   //admin被app 挂载到这个路径(/admin)之下
   ```
 
   
@@ -533,7 +534,7 @@ server.listen = function (...args) {
 server.listen(8000, () => { })
 ```
 
-* 字段
+* app字段
 
 ```javascript
 case sensitive routing   Boolean   大小写敏感路由
@@ -673,7 +674,8 @@ function express() {
     function step() {
       let middleware = middlewares[i++]
       if (middleware) {
-        middleware(req, res, () => {
+        middleware(req, res, () => { 
+         //不能直接写step 每一次接收的next函数不能是同一个 不然乱了
           step()
         })
       }
@@ -715,54 +717,7 @@ http.createServer(app).listen(8080, () => {
 ```
 
 ```javascript
-const http = require('http')
-function express() {
-  let middlewares = []
-  function expressApp(req, res) {
-    step()
-    function step() {
-      let middleware = middlewares.shift()
-      if (middleware) {
-        middleware(req, res, () => {
-          step()
-        })
-      }
-    }
-  }
-  expressApp.use = function (middleware) {
-    middlewares.push(middleware)
-  }
-  return expressApp
-}
-
-let app = express()
-
-function a(req, res, next) {
-  console.log(req.method, req.url)
-  next()
-}
-
-function b(req, res, next) {
-  let body = ''
-  req.on('data', data => {
-    body += data.toString()
-  })
-  req.on('end', () => {
-    req.body = body
-    next()
-  })
-}
-
-function c(req, res, next) {
-  res.end(`you are visiting ${req.url} using ${req.method},you body is ${req.body}`)
-}
-
-
-http.createServer(f).listen(8080, () => {
-  console.log('listening', 8080)
-})
-
-
+//第二种写法
 function f(req, res) {
   a(req, res, () => {
     b(req, res, () => {
@@ -772,7 +727,7 @@ function f(req, res) {
     })
   })
 }
-
+//倒着生成
 let midddlewares = [a, b, c, d, e]
 
 // let prevNext = ()=>{}
@@ -811,6 +766,22 @@ let f = compose([
 ])
 
 f(1, 2)
+
+function express2(){
+  let middlewares = []
+  let composed = function(){}
+
+  function expressApp(req,res){
+    composed(req,res)
+  }
+
+  expressApp.use = function(middleware){
+    middlewares.push(middleware)
+    composed = composed(middlewares)
+  }
+
+  return expressApp
+}
 ```
 
 * 创建express项目
@@ -820,4 +791,17 @@ f(1, 2)
   $express my-website
   ```
 
+  ```javascript
+  server.locals.pretty = true
   
+  npm init  //创建packge.json
+  views //模板
+  app.set('views', __dirname + '/views')
+  static //前端用的js文件
+  
+  npm i open //打开浏览器
+  npm i pug
+  ```
+  
+  
+
