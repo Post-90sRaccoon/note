@@ -801,7 +801,80 @@ function express2(){
   
   npm i open //打开浏览器
   npm i pug
+  npm i cookie-parser //中间件
+  app.use(cookieParser('lkjweoij2o3i409e'))
+  
+  res.cookie('user', user.name, {
+          maxAge: 86400000,
+          signed: true,
+        })//发cookie 字符串签名
+  app.use((req, res, next) => {
+    console.log(req.signedCookies)
+    next()
+  })
+  
+  .gitignore
+  /node_modules/  git提交不提交node_modules
   ```
   
-  
+* 保持用户登录状态 给用户下发cookie cookie要签名 防止伪造
 
+#### cookie
+
+POST / login HTTP / 1.1
+
+
+
+name = lily & password=123456
+
+\----------------------------
+
+ HTTP / 1.1 200 OK
+
+Set - Cookie: user = lily; Expires = ISO_TIME_STRING; Path = '/';
+
+Set - Cookie: user = lily; Expires = ISO_TIME_STRING;
+
+过期日期 作用路径
+
+\-----------------------------
+
+ GET / HTTP / 1.1
+
+Cookies: user = lily; logedin = true
+
+
+
+JS 操作cookie
+
+可以把cookie理解为一个key / val映射对
+
+只不过由于设计太早, 都是以字符串的形式体现的api
+
+设置或增加一个cookie
+
+`document.cookie = "key=val;Expires=Date.toGMTString()"`
+
+获取只能一次性获取所有的映射对
+
+`document.cookie`
+
+用过期删除cookie
+
+`GMT = new Date().toGMTString()`
+
+`document.cookie = "key=;Expires=GMT"`
+
+
+
+用http操作cookie
+
+浏览器会主动发送所有的Cookie在Cookies头上面
+
+设置只能用服务器设置
+
+Set-Cookie:a=b httpOnly
+
+httpOnly js读不到
+
+在同一个响应中，Set-Cookie头可以出现多次，一次性设置多个cookie
