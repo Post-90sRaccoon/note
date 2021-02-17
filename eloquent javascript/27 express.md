@@ -48,6 +48,7 @@ const express = require('express')
 const server = express()
 
 //中间件 middleware 执行某种操作的中间的一个步骤
+//use 路径开头即可 get post必须完整匹配
 
 //经历每一个中间件函数 前面两个参数req res 都一样
 server.use((req, res, next) => {
@@ -815,6 +816,29 @@ function express2(){
   
   .gitignore
   /node_modules/  git提交不提交node_modules
+  
+  npm i sqlite
+  npm i sqlite3 
+  
+  sqlite.open({
+    filename: __dirname + '/bbs.db',
+    driver: sqlite3.Database
+  }).then(value => {
+    db = value
+  })
+  winpty ./sqlite3.exe bbs.db
+  
+  npm i multer //解析文件upload请求的中间件
+  const uploader = multer({ dest: __dirname + '/uploads/' }) //解析出来的图片无后缀 用fs加格式
+  npm i svg-captcha
+  
+  //刷新验证码 换时间戳
+  http://localhost/captcha?t=39838488
+  
+  //下载别人项目运行
+  npm i 即可 会把package.json和lock.json 的依赖全部下载
+  //发邮件
+  npm i nodemailer
   ```
   
 * 保持用户登录状态 给用户下发cookie cookie要签名 防止伪造
@@ -878,3 +902,10 @@ Set-Cookie:a=b httpOnly
 httpOnly js读不到
 
 在同一个响应中，Set-Cookie头可以出现多次，一次性设置多个cookie
+
+
+
+* ?return_url=
+* 提交图片`form(action="/register" method="post" enctype="multipart/form-data")`
+* 验证码   http1 get页面  http2 get验证码  http3 post   http3 request需要知道上一个也就是http2 发送过去的验证码
+* session会话 和同一个用户会话 如果请求者没有session id 给你个session id  用cookie实现
