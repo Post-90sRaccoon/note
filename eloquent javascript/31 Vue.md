@@ -74,6 +74,8 @@
   Vue.set(data.todos, 3, { content: 'jdfsja', completed: true })
   //改第三项
 </script>
+
+vue3 用proxy 而不是observer了 能劫持数组下标
 ```
 
 #### 框架原理
@@ -228,6 +230,8 @@ app.todos[3].completed = false //改成相反状态
 
 #### 侦听属性 watch
 
+> 当需要在数据变化时执行异步或开销较大的操作时，这个方式是最有用的。 看文档例子
+
 ```javascript
 data:{
   letfCount = 0
@@ -237,6 +241,13 @@ watch{
     this.leftCount = this.todos.filter(it=>!=it.completed).length
   }
 }
+watch: {
+      question(newQuestion, oldQuestion) {
+        if (newQuestion.indexOf('?') > -1) {
+          this.getAnswer()
+        }
+      }
+    }
 ```
 
 ```html
@@ -512,7 +523,7 @@ v-for 优先级更高 先看v-for 再根据v-if显示或者不显示
 
 
 * v-for可以嵌套 解析二维数组
-* 计算属性getter 不能传参 要传参只能写函数
+* ==计算属性getter 不能传参 要传参只能写函数==
 * v-for ='n in 10' 整数 1,2,3,4,5,6,7,8,9,10
 * template与v-for一起使用
 
@@ -710,7 +721,7 @@ v-else
 * Vue程序在创建 运行 销毁 过程中经历一系列步骤 叫做生命周期
 * 每个步骤的前后叫做生命周期钩子
 
-![Vue 实例生命周期](31%20Vue%E2%80%98.assets/lifecycle.png)
+![实例的生命周期](31%20Vue.assets/lifecycle.png)
 
 * init events and lifecycle
 
@@ -910,7 +921,7 @@ click.exact        没有任何系统修饰符按下的时候才会触发
 
 * v-model 双向绑定 
 
-> v-model 内部为不同的输入元素使用不同的property并抛出不同的时间
+> v-model 内部为不同的输入元素使用不同的property并抛出不同的事件
 >
 > text和textarea元素使用value property和input事件
 >
@@ -1053,7 +1064,7 @@ click.exact        没有任何系统修饰符按下的时候才会触发
       data() { },
       methods: {},
       components:{
-        "foo-bar":{ //局部注册组件 只能在button counteer里面用 还可以再往里面嵌套
+        "foo-bar":{ //局部注册组件 只能在button counter里面用 还可以再往里面嵌套
           template:xxx,
           data(){
 
@@ -1325,7 +1336,7 @@ $0.__vue__.inc()
 
 #### 滚动
 
-```javascript
+```html
 <!DOCTYPE html>
 <html lang="en">
 
@@ -1677,12 +1688,44 @@ Vue.component('blog-post', {
 
 ```html
     this.$emit('myEvent')
-    //监听没有效果 监听的时候 不支持中划线
+    //监听没有效果 监听的时候 不支持大小写转换 应该一致  this.$emit('my-event')
     <my-component v-on:my-event="doSomething"></my-component>
+```
+
+##### 抛出验证事件与验证抛出的事件
+
+> 为事件分配一个函数，该函数接收传递给 `$emit` 调用的参数，并返回一个布尔值以指示事件是否有效。
+
+```javascript
+app.component('custom-form', {
+  emits: {
+    // 没有验证
+    click: null,
+
+    // 验证submit 事件
+    submit: ({ email, password }) => {
+      if (email && password) {
+        return true
+      } else {
+        console.warn('Invalid submit event payload!')
+        return false
+      }
+    }
+  },
+  methods: {
+    submitForm() {
+      this.$emit('submit', { email, password })
+    }
+  }
+})
 ```
 
 * v-model
 
+  > 默认情况下，组件上的 `v-model` 使用 `modelValue` 作为 prop 和 `update:modelValue` 作为事件。我们可以通过向 `v-model` 传递参数来修改这些名称
+  >
+  > 看文档3.0不一样了
+  
   ```html
   <!DOCTYPE html>
   <html lang="en">
@@ -1863,7 +1906,7 @@ Vue.component('blog-post', {
     //<base-checkbox :checked="xxx" @change="xxx=$event" >
 ```
 
-* 原生事件绑定到组件
+* 原生事件绑定到自定义组件
 
 ```html
 <list-input @click ="yyy">
@@ -2041,7 +2084,7 @@ Vue.component('blog-post', {
 
 #### 作用域插槽
 
-```javascript
+```html
 <!DOCTYPE html>
 <html lang="en">
 
@@ -2894,7 +2937,20 @@ var component = new Component() // => "hello from mixin!"
 
 * 过滤器 |
 
-#### 单文件组件 
+## 钩子函数
+
+一个指令定义对象可以提供如下几个钩子函数 (均为可选)：
+
+* `created`：在绑定元素的 attribute 或事件监听器被应用之前调用。在指令需要附加须要在普通的 `v-on` 事件监听器前调用的事件监听器时，这很有用。
+* `beforeMount`：当指令第一次绑定到元素并且在挂载父组件之前调用。
+* `mounted`：在绑定元素的父组件被挂载后调用。
+* `beforeUpdate`：在更新包含组件的 VNode 之前调用。
+
+* `updated`：在包含组件的 VNode **及其子组件的 VNode** 更新后调用。
+* `beforeUnmount`：在卸载绑定元素的父组件之前调用
+* `unmounted`：当指令与元素解除绑定且父组件已卸载时，只调用一次。
+
+#### 单文件组件
 
 ```vue
 //slider.vue

@@ -109,7 +109,7 @@ class A{
 //等价
 ```
 
-### hello vue
+### hello React
 
 ```html
 <!DOCTYPE html>
@@ -253,7 +253,7 @@ class A{
         // todo.completed = !todo.completed
         // // this.setState({})
         // this.forceUpdate()
-
+				//setState构建新对象
         this.setState({
           todos: this.state.todos.map(it => {
             if (it == todo) {
@@ -392,7 +392,9 @@ obj2 = {
 
 * 创建一个节流函数，在 wait 秒内最多执行 `func` 一次的函数。 该函数提供一个 `cancel` 方法取消延迟的函数调用以及 `flush` 方法立即调用。 可以提供一个 options 对象决定如何调用 `func` 方法， options.leading 与|或 options.trailing 决定 wait 前后如何触发。 `func` 会传入最后一次传入的参数给这个函数。 随后调用的函数返回是最后一次 `func` 调用的结果。
 
-* React.Children 处理嵌套子元素的情况
+* 节流不能直接写在事件触发那里，每次创建新函数。写在构造函数那里，只运行一次。
+
+* React.Children 处理自定义组件嵌套子元素的情况
 
 ```javascript
 //多个组件用一个div包起来
@@ -406,13 +408,15 @@ ReactDOM.render(
     );
 ```
 
+#### 修改复杂对象单个属性
+
 * 结构共享 使用immer unpkg查找
 
 * 坑点：immer 返回的对象是只读的
 
   `<script src="https://unpkg.com/immer@7.0.8/dist/immer.umd.development.js"></script>`
 
-  ```javascript
+  ```html
   <!DOCTYPE html>
   <html>
   

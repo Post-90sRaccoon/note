@@ -6,6 +6,7 @@ const { resolve } = require('path')
 let app = new Koa() //这里app不是函数
 
 
+//next执行完可以回来 同级request在服务器的时间
 app.use(async (ctx, next) => {   //必须是异步函数 只有use一个方法 没有其他中间件方法 next也是异步函数
   // ctx.cookies.userid
   // ctx.body = 'foo'
@@ -82,7 +83,7 @@ app.listen(3000)
 const Koa = require('koa');
 const app = new Koa()
 
-//加密
+//加密 用于sign cookie 
 app.keys = ['im a newer secret', 'i like turtle']
 app.keys = new KeyGrip(['im a newer secret', 'i like turtle'], 'sha256')
 

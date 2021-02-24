@@ -909,3 +909,19 @@ httpOnly js读不到
 * 提交图片`form(action="/register" method="post" enctype="multipart/form-data")`
 * 验证码   http1 get页面  http2 get验证码  http3 post   http3 request需要知道上一个也就是http2 发送过去的验证码
 * session会话 和同一个用户会话 如果请求者没有session id 给你个session id  用cookie实现
+
+#### xss与sql注入
+
+> cross site script  转义
+>
+> 防范：csp 内容安全策略 让它不能把数据发送到其他服务器 限制页面加载js的来源
+
+#### csrf攻击
+
+> 访问另外网站  如果网站上img.src = ‘http://localhost:8081/delete-comment/14’  会带上cookie发送一个get请求到目标site
+>
+> cross site request forgacy
+>
+> 只有从本站发送请求带上cookie  document.cookie = ‘“user=foo,Expires=XX;Path=/;httpOnly;Samesite’
+>
+> CSRFToken

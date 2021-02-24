@@ -25,7 +25,7 @@ npm lodash mine  安装依赖
 
 package.json 最后添加字段
 "bin":{
-"s":"./xxxxx.js"
+"mydict":"./dict.js"
 }
 
 xxx.js 文件最上方加
@@ -44,7 +44,7 @@ bin     包提供命令行工具
 { "bin": { "myapp": "./cli,js" } }
 man     帮助文档
 scripts  { "test": "echo \"Error: no test specified\" && exit 1" }
-//npm run test 命令  这里的命令会现在当前文件的node_modules 里面找 如果找不到 再去全局找
+//npm run xxx 命令  这里的命令会现在当前文件的node_modules 里面找 如果找不到 再去全局找
 //其中 npm run start 可以简写为 npm start
 //     npm run test  npm test
 config  可以存任何东西  可以require到
@@ -188,7 +188,7 @@ yargs //解析命令行参数
 </html>
 ```
 
-```javascript
+```html
 <!DOCTYPE html>
 <html lang="en">
 
@@ -439,7 +439,7 @@ yargs //解析命令行参数
 </html>
 ```
 
-```javascript
+```html
 <!DOCTYPE html>
 <html lang="en">
 
@@ -779,7 +779,7 @@ yargs //解析命令行参数
 </html>
 ```
 
-```javascript
+```vue
 <!DOCTYPE html>
 <html lang="en">
 
