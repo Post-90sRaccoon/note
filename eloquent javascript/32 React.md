@@ -412,14 +412,14 @@ ReactDOM.render(
 
 * 结构共享 使用immer unpkg查找
 
-* 坑点：immer 返回的对象是只读的
+* 坑点：immer 返回的对象是只读的 不能变了
 
   `<script src="https://unpkg.com/immer@7.0.8/dist/immer.umd.development.js"></script>`
 
   ```html
   <!DOCTYPE html>
   <html>
-  
+   
   <head>
     <meta charset="UTF-8" />
     <title>Hello World</title>
@@ -465,9 +465,9 @@ ReactDOM.render(
           return this.state.todos.filter(it => !it.completed).length
         }
         deleteTodo(todo) {
-          let idx = this.state.todos.indexOf(todo)
-          this.setState({
-            todos: this.state.todos.filter(it => it !== todo)
+           let idx = this.state.todos.indexOf(todo)
+           this.setState({
+           todos: this.state.todos.filter(it => it !== todo)
           })
         }
   
@@ -505,7 +505,7 @@ ReactDOM.render(
         }
         toggleSelectAll = () => {
           if (this.isAllCompleted()) {
-            this.setState(produce(state => {
+            this.setState(produce(this.state,state => {
               state.todos.forEach(it => {
                 it.completed = false
               })
@@ -520,13 +520,14 @@ ReactDOM.render(
             }))
           }
         }
+        //setState(state=>{return {}}) 里面的函数默认传入state 所以可以直接传入一个柯里化函数
         addTodo = (e) => {
           if (e.key == 'Enter') {
             let todoText = e.target.value.trim()
             if (todoText) {
               this.setState(produce(state => {
                 state.todos.push({ content: todoText, completed: false })
-              }))
+              }))(this.state)//柯里化
             }
             e.target.value = ''
           }
@@ -594,15 +595,48 @@ ReactDOM.render(
   
   </html>
   ```
-* 覆盖setState
+  
+  ```javascript
+  <div id="root"></div>
+    <script type="text/babel">
+      function tick() {
+        const element = (
+          <div>
+            <h1>hello,world</h1>
+            <h2>it is {new Date().toLocaleTimeString()}</h2>
+          </div>
+        )
+        ReactDOM.render(element, document.getElementById('root'))
+      }
+      setInterval(tick, 1000)
+    </script>
+  
+    <script type="text/babel">
+      function Clock(props) {
+        return (
+          <div>
+            <h1>hello,world</h1>
+            <h2>it is {props.date.toLocaleTimeString()}</h2>
+          </div>
+        )
+      }
+      function tick() {
+        ReactDOM.render(<Clock date={new Date()} />, document.getElementById('root'))
+      }
+      setInterval(tick, 1000)
+    </script>
+  ```
+  
+* 劫持setState
 
   ```javascript
   setState(partialState,cb){
-          if(typeof partialState === 'function'){
-            return super.setState(produce(partialState),cb)
-          }
-          super.setState(partialState,cb)
-        }
+    if(typeof partialState === 'function'){
+      return super.setState(produce(partialState),cb)
+    }
+    super.setState(partialState,cb)
+  }
+  //写在构造前面
   ```
 
 #### 生命周期方法
@@ -680,7 +714,7 @@ ReactDOM.render(
         componentWillUnmount() {
           clearInterval(this.timerId)
         }
-        componentDidMount() {
+        componentDidMount() {//产生副作用的放在这里
           this.timerId = setInterval(() => {
             this.setState({
               time: new Date()
@@ -740,12 +774,33 @@ ReactDOM.render(element, document.getElementById('root'));
 
 #### 正确使用state
 
-*不要直接修改state 而是应该使用setState() 
+* 不要直接修改state 而是应该使用setState() 
 
 * state更新可能是异步的
 
-* `this.props` 和 `this.state` 可能会异步更新，所以你不要依赖他们的值来更新下一个状态。
+* `this.props` 和 `this.state` 可能会异步更新(setState之后没有立刻合并到this.state上面去,事件函数结束才合并)，所以你不要依赖他们的值来更新下一个状态。
 
+  ```javascript
+  inc =()=>{
+    this.setState({
+    count:this.state.count+1
+    })
+    this.setState({
+    count:this.state.count+1
+    })
+  }
+  //count为1 不为2
+  inc = () => {
+    this.setState(state => {
+      return { count: state.count + 1 }
+    })
+    this.setState(state => {
+      return { count: state.count + 1 }
+    })
+  }
+  //传入函数 函数返回对象 函数不是当场调用 存起来 为2
+  ```
+  
   ```javascript
   this.setState({
     counter: this.state.counter + this.props.increment,
@@ -754,7 +809,9 @@ ReactDOM.render(element, document.getElementById('root'));
   
 * 要解决这个问题，可以让 `setState()` 接收一个函数而不是一个对象。这个函数用上一个 state 作为第一个参数，将此次更新被应用时的 props 做为第二个参数：
 
-* 改变太多 React拆成一部分一部分渲染 2020-08-28 14  8分左右
+* setState在事件处理函数是异步的 timer里是同步的
+
+* 改变太多 React拆成一部分一部分渲染 
 
   ```javascript
   this.setState((state, props) => ({
@@ -827,7 +884,7 @@ ReactDOM.render(element, document.getElementById('root'));
       )
   ```
   
-  ```html
+  ```javascript
   <!DOCTYPE html>
   <html>
   
@@ -865,7 +922,7 @@ ReactDOM.render(element, document.getElementById('root'));
         inc = () => {
           this.setState(state => {  //传入的是this.state对象
             return {
-              count: state.count + 1  //this.state 和 返回的这个对象合到一起成为一个新的对象
+              count: state.count + 1  //state 和 返回的这个对象合到一起成为一个新的对象
             }
           })//还是存起来没有立刻执行
           this.setState(state => {   //这里的state就是合到一起的新的对象 这里的state和this.state已经不是同一个对象了
@@ -924,7 +981,7 @@ ReactDOM.render(element, document.getElementById('root'));
   >
   > 同步调用异步 批量合并效率高  没必要立刻更新dom
   >
-  > 异步调用同步 调用栈最底层就是timer 如果不立刻更改dom 退出调用栈没机会更改了
+  > 异步调用同步 调用栈最底层就是timer 没有安排回调 如果不立刻更改dom 退出调用栈没机会更改了
 
 * setState 浅合并
 
@@ -935,6 +992,9 @@ ReactDOM.render(element, document.getElementById('root'));
 
 ```javascript
 class LoggingButton extends React.Component {
+  constructor(){
+    //this.handleClick = this.handleClick.bind(this) 写法一
+  }
   handleClick() {
     console.log('this is:', this);
   }
@@ -950,7 +1010,7 @@ class LoggingButton extends React.Component {
 }
 ```
 
-* 此语法问题在于每次渲染 `LoggingButton` 时都会创建不同的回调函数。在大多数情况下，这没什么问题，但如果该回调函数作为 prop 传入子组件时，这些组件可能会进行额外的重新渲染。我们通常建议在构造器中绑定或使用 class fields 语法来避免这类性能问题
+* 此语法问题在于每次渲染 `LoggingButton` 时都会创建不同的回调(箭头)函数。在大多数情况下，这没什么问题，但如果该回调函数作为 prop 传入子组件时，这些组件可能会进行额外的重新渲染。我们通常建议在构造器中绑定或使用 class fields 语法来避免这类性能问题
 
 * 向事件处理函数传递参数
 
@@ -959,7 +1019,7 @@ class LoggingButton extends React.Component {
   <button onClick={this.deleteRow.bind(this, id)}>Delete Row</button>
   ```
 
-  > 在这两种情况下，React 的事件对象 `e` 会被作为第二个参数传递。如果通过箭头函数的方式，事件对象必须显式的进行传递，而通过 `bind` 的方式，事件对象以及更多的参数将会被隐式的进行传递。
+  > 在这两种情况下，React 的事件对象 `e` 会被作为第二个参数传递。如果通过箭头函数的方式，事件对象必须显式的进行传递，而通过 `bind` 的方式，事件对象以及更多的参数将会被隐式的进行传递。bind返回函数 e被隐式传入
 
 #### 列表&Key
 
@@ -1004,7 +1064,7 @@ ReactDOM.render(
 
 *  受控组件
 
-> 在 React 中，可变状态（mutable state）通常保存在组件的 state 属性中，并且只能通过使用 `setState()`来更新。使 React 的 state 成为“唯一数据源”。渲染表单的 React 组件还控制着用户输入过程中表单发生的操作。被 React 以这种方式控制取值的表单输入元素就叫做“受控组件”。
+> 在 React 中，可变状态（mutable state）通常保存在组件的 state 属性中，并且只能通过使用 `setState()`来更新。使 React 的 state 成为“唯一数据源”。渲染表单的 React 组件还控制着用户输入过程中表单发生的操作。被 React 以这种方式控制取值的表单输入元素就叫做“受控组件”。用受控组件要绑定onChange事件 
 
 * textarea
 
@@ -1037,7 +1097,7 @@ ReactDOM.render(
 
 > 它的value只读，它是React中的一个非受控组件。赋值只能赋值空
 
-* 处理多个输入 添加name属性
+* 处理多个input元素 添加name属性
 
 ```html
 <!DOCTYPE html>
@@ -1164,7 +1224,11 @@ ReactDOM.render(
 
 > 在受控组件上指定 value 的 prop 会阻止用户更改输入。如果你指定了 `value`，但输入仍可编辑，则可能是你意外地将`value` 设置为 `undefined` 或 `null`。这样就是不受控组件了
 
+##### react不会使用原生表单 可以使用Formik
+
 ### 状态提升
+
+> 多个组件需要反映相同的数据变化 将共享状态提升到最近的公共父组件去
 
 ```html
 <!DOCTYPE html>

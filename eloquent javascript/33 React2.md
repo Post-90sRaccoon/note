@@ -35,13 +35,17 @@ React.createElement(
 
 ```javascript
 import React,{Component} from 'react'
+import Foo from ./foo.js
 
 export default class Foo extends Component{
   render(){
     // return <div></div>
     return React.createElement('div')
+    //<FOO>
+    //React.createElement(Foo)
   }
 }
+//react自定义标签首字母必须大写 原生必须小写 
 ```
 
 * vue中单文件组件
@@ -62,7 +66,7 @@ export default {
     }
   },
   components:{
-    Foo,
+    Foo,//要局部注册
   }
 }
 </script>
@@ -86,7 +90,7 @@ function WarningButton() {
 }
 ```
 
-> 如果你不使用 JavaScript 打包工具而是直接通过 `<script>` 标签加载 React，则必须将 `React` 挂载到全局变量中如果你不使用 JavaScript 打包工具而是直接通过 `<script>` 标签加载 React，则必须将 `React` 挂载到全局变量中
+> 如果你不使用 JavaScript 打包工具而是直接通过 `<script>` 标签加载 React，则必须将 `React` 挂载到全局变量中
 
 #### 在JSX类型中使用点语法
 
@@ -172,7 +176,7 @@ function NumberDescriber(props) {
 
 #### 属性展开
 
-```javascript
+```jsx
 function App1() {
   return <Greeting firstName="Ben" lastName="Hector" />;
 }
@@ -220,7 +224,7 @@ other //{a: 1, b: 2, d: 4, e: 5}
 
 #### 字符串字面量
 
-```javascript
+```jsx
 <MyComponent>Hello world!</MyComponent>
 //此时 props.children 就只是该字符串
 //MyComponent 中的 props.children 是一个简单的未转义字符串
@@ -230,7 +234,7 @@ other //{a: 1, b: 2, d: 4, e: 5}
 
 #### javaScript表达式作为子元素
 
-```javascript
+```jsx
 //JavaScript 表达式可以被包裹在 {} 中作为子元素
 <MyComponent>foo</MyComponent>
 <MyComponent>{'foo'}</MyComponent>
@@ -238,7 +242,7 @@ other //{a: 1, b: 2, d: 4, e: 5}
 
 #### 函数作为子元素
 
-```javascript
+```jsx
 // 调用子元素回调 numTimes 次，来重复生成组件
 function Repeat(props) {
   let items = [];
@@ -261,7 +265,7 @@ function ListOfTenThings() {
 
 > 0会被渲染
 
-```javascript
+```jsx
 import React,{Component, Children} from 'react'
 export default class Foo extends Component{
   constructor(props){
@@ -283,23 +287,29 @@ export default class Foo extends Component{
   <span></span>
   <button></button>
 </Foo>
+
+Foo.defaultProps={
+  name:'Mary' //声明默认属性
+}
 ```
 
 > jsx 中style要写成对象
 >
 > ` < main style = {{ border: '5px solid violet', margin: '10px' }}></main >`
 >
-> 坑点：子元素多余一个children是一个数组   子元素是一个children 不是数组 直接指向子元素
+> 坑点：子元素多于一个children是一个数组   子元素是一个children 不是数组 直接指向子元素
 >
 > React.Children 提供了一组函数 处理的是真正的JSX子元素
 >
-> count 返回组件总数量 传入的函数作为子元素会被忽略 forEach map only toArray
+> React.Children.count(prop.children) 返回组件总数量 传入的函数作为子元素会被忽略 forEach map only toArray
 
 
 
 ## 协调 reconciliation
 
 > 在某一时间节点调用 React 的 `render()` 方法，会创建一棵由 React 元素组成的树
+
+![image-20210225213056756](33%20React2.assets/image-20210225213056756.png)
 
 ### Diffing算法
 
@@ -319,7 +329,7 @@ export default class Foo extends Component{
 
 #### 对比同类型的组件元素
 
-> 当一个组件更新时，组件实例保持不变，这样 state 在跨越不同的渲染时保持一致。React 将更新该组件实例的 props 以跟最新的元素保持一致，并且调用该实例的 `componentWillReceiveProps()` 和 `componentWillUpdate()` 方法。
+> 当一个组件更新(接收的props变化)时，组件实例保持不变，这样 state 在跨越不同的渲染时保持一致。React 将更新该组件实例的 props 以跟最新的元素保持一致，并且调用该实例的 `componentWillReceiveProps()`（现在是static getDerivedStateFromProps(props){return {//return 的对象 合并到state上}}） 和 `componentWillUpdate()` 方法。
 >
 > 下一步，调用 `render()` 方法，diff 算法将在之前的结果以及新的结果中进行递归。
 
@@ -356,7 +366,7 @@ export default class Foo extends Component{
 
 > 请谨记协调算法是一个实现细节。React 可以在每个 action 之后对整个应用进行重新渲染，得到的最终结果也会是一样的。在此情境下，重新渲染表示在所有组件内调用 `render` 方法，这不代表 React 会卸载或装载它们。React 只会基于以上提到的规则来决定如何进行差异的合并。
 
-```javascript
+```jsx
 render(){
   return <div>
     <Counter start={this.state.number} />
@@ -386,7 +396,7 @@ static getDerivedStateFromProps(prpos) { //静态 组件调用而不是组件的
 
 #### 短语法
 
-```javascript
+```jsx
 class Columns extends React.Component {
   render() {
     return (
@@ -403,7 +413,7 @@ class Columns extends React.Component {
 
 > 使用显式 `<React.Fragment>` 语法声明的片段可能具有 key。一个使用场景是将一个集合映射到一个 Fragments 数组
 
-```javascript
+```jsx
 function Glossary(props) {
   return (
     <dl>
@@ -419,7 +429,7 @@ function Glossary(props) {
 }
 ```
 
-```javascript
+```jsx
 <div id="root"></div>
   <script type="text/babel">
     // function Foo() {
@@ -457,8 +467,12 @@ frag.append(document.createElement('button'))
 
 ```javascript
 import PropTypes from 'prop-types';
+//官方的包
 
 class Greeting extends React.Component {
+  static defaultProps = {
+  	start : 2
+	}
   render() {
     return (
       <h1>Hello, {this.props.name}</h1>
@@ -566,7 +580,7 @@ MyComponent.propTypes = {
 
 * 你可以通过 `PropTypes.element` 来确保传递给组件的 children 中只包含一个元素。
 
-```javascript
+```jsx
 import PropTypes from 'prop-types';
 
 class MyComponent extends React.Component {
@@ -588,7 +602,7 @@ MyComponent.propTypes = {
 
 ### 默认Prop值
 
-```javascript
+```jsx
 class Greeting extends React.Component {
   render() {
     return (
@@ -609,7 +623,7 @@ ReactDOM.render(
 );
 ```
 
-```javascript
+```jsx
 class Greeting extends React.Component {
   static defaultProps = {
     name: 'stranger'
@@ -625,17 +639,23 @@ class Greeting extends React.Component {
 
 ## Refs and the DOM
 
-```javascript
+> 管理焦点 文本选择 媒体播放
+>
+> 强者触发动画
+>
+> 集成第三方DOM库
+
+```jsx
  class DatePicker extends React.Component {
       componentDidMount() {
         new Pikaday(this.refs.pickerField)  //this.refs指向真实DOM
       }
-      //第一种用法
+      //第一种用法 不推荐 实现复杂
       render() {
         return <input ref="pickerField" type="text" /> //返回的一瞬间真实dom还没创建出来 等到真实dom出来后
       }
       //第二种用法
-      render() { //渲染到Dom里调用
+      render() { //这个函数渲染到Dom里调用 el就是div的实例自己 就把dom挂在this.myDiv上了
         return <div ref={el => { this.myDiv = el }}>
           <input ref="pickerField" type="text" />
         </div>
@@ -676,13 +696,13 @@ class Greeting extends React.Component {
         action(obj)
         for (var key in obj) {
           let val = obj[key]
-          action(val, action)
+          action(val, action) 
         }
       }
     }
 ```
 
-```html
+```jsx
 <!DOCTYPE html>
 <html>
 
@@ -731,10 +751,10 @@ class Greeting extends React.Component {
         //创建了太多函数 每次render创建一次新的函数
         //run两次 开发者模式下 确保这个函数是一个纯函数 不管执行多少次都一样
         
-        setDivRef = el => {
+       setDivRef = el => {
         console.log('running ref func')
         this.refs.myDiv = el
-      }
+     	 }
       render(){
         console.log(this)
         return <div ref={this.setDivRef}>
@@ -749,7 +769,7 @@ class Greeting extends React.Component {
 </html>
 ```
 
-```html
+```jsx
 <!DOCTYPE html>
 <html>
 
@@ -808,7 +828,9 @@ class Greeting extends React.Component {
 </html>
 ```
 
-```html
+* 第三种方法
+
+```jsx
 <!DOCTYPE html>
 <html>
 
@@ -850,14 +872,12 @@ class Greeting extends React.Component {
         })                              //这样create的element里面是有ref的 这个东西并不是组件实例 是react.element
       }                                 //a = React.createElement('DatePicker',{ref:'foo'})
                                         //相当于<DatePicker ref='foo' />  
-      setDivRef = el => {
-        this.refs.myDiv = el
-      }
+   
 
       render() {
         console.log(this)
         console.log(1)
-        return <div ref={this.setDivRef}>
+        return <div>
           <input ref="myInput" type="text" />
           <span onClick={this.setMsg}>{this.state.msg}</span>
           <Foo ref={this.myRef} />
