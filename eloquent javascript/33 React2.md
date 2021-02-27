@@ -896,9 +896,9 @@ class Greeting extends React.Component {
 
 > 为了拿到Foo里的div
 
-```javascript
-<Foo ref={this.myRef} /> 变为
-<Foo theRef={this.myRef} /> 随便起个属性名
+```jsx
+<Foo ref={this.myRef} /> //变为
+<Foo theRef={this.myRef} /> //随便起个属性名
 
 
 class Foo extends React.Component {
@@ -911,7 +911,7 @@ https://zh-hans.reactjs.org/docs/refs-and-the-dom.html
 
 ## Ref转发
 
-```javascript
+```jsx
 const FancyButton = React.forwardRef((props, ref) => (
   <button ref={ref} className="FancyButton">
     {props.children}
@@ -919,7 +919,7 @@ const FancyButton = React.forwardRef((props, ref) => (
 ));
 
 // 你可以直接获取 DOM button 的 ref：
-// 被forwardRef返回的组件的ref属性不是一个特殊属性
+// 被forwardRef返回的组件的ref属性不是一个特殊属性 不会指向实例 可以穿到内部 不能接收class 只能是函数
 const ref = React.createRef();
 <FancyButton ref={ref}>Click me!</FancyButton>;
 ```
@@ -930,7 +930,7 @@ const ref = React.createRef();
 >
 > 严格模式检查仅在开发模式下运行；*它们不会影响生产构建*。
 
-```javascript
+```jsx
 import React from 'react';
 
 function ExampleApplication() {
@@ -959,7 +959,7 @@ function ExampleApplication() {
 
 ## Render Props
 
-```ht
+```jsx
 <!DOCTYPE html>
 <html>
 
@@ -992,7 +992,7 @@ function ExampleApplication() {
 
 ### Render Props解决横切关注点问题
 
-```html
+```jsx
 <!DOCTYPE html>
 <html>
 
@@ -1031,7 +1031,7 @@ function ExampleApplication() {
 </html>
 ```
 
-```html
+```jsx
 <!DOCTYPE html>
 <html>
 
@@ -1090,7 +1090,7 @@ function ExampleApplication() {
 </html>
 ```
 
-## 高阶组件 HOC  阅读文档
+## 高阶组件 HOC（文档有例子）
 
 > 用于复用组件逻辑的一种高级技巧
 
@@ -1099,7 +1099,7 @@ const EnhancedComponent = higherOrderComponent(WrappedComponent);
 //高阶组件是参数为组件，返回值为新组件的函数
 ```
 
-### 使用HOC解决横切关注点问题
+### 使用HOC解决横切关注点问题（解耦，只关注一件事）
 
 > HOC 不会修改传入的组件，也不会使用继承来复制其行为。相反，HOC 通过将组件*包装*在容器组件中来*组成*新组件。HOC 是纯函数，没有副作用。
 
@@ -1109,7 +1109,7 @@ const EnhancedComponent = higherOrderComponent(WrappedComponent);
 
 > HOC 应该透传与自身无关的 props
 
-```javascript
+```jsx
 render() {
   // 过滤掉非此 HOC 额外的 props，且不要进行透传
   const { extraProp, ...passThroughProps } = this.props;
@@ -1128,7 +1128,7 @@ render() {
 }
 ```
 
-```javascript
+```jsx
 const ConnectedComment = connect(commentSelector, commentActions)(CommentList);
 
 // connect 是一个函数，它的返回值为另外一个函数。
@@ -1143,7 +1143,7 @@ const ConnectedComment = enhance(CommentList)
 
 #### 不要在 render 方法中使用 HOC
 
-```javascript
+```jsx
 render() {
   // 每次调用 render 函数都会创建一个新的 EnhancedComponent
   // EnhancedComponent1 !== EnhancedComponent2
@@ -1155,7 +1155,7 @@ render() {
 
 #### 务必复制静态方法
 
-```javascript
+```jsx
 //务必复制静态方法 静态属性
     class Foo extends React.Component {
       static propTypes ={
@@ -1167,26 +1167,44 @@ render() {
     }
 
     function enhance(Comp) {
-      return class EnhancesFoo extends React.Component {
-        static propTypes = {
-
-        }
-        static getDerivedStateFromProps() {
-
-        } 
-      }
+       class EnhancesFoo extends React.Component {}
+       EnhancesFoo.staticMethod = WrappedCoponent.staticMethod
+      	return EnhancesFoo
     }
 ```
 
 #### Refs不会被传递
 
-```javascript
+```jsx
 let EnhancesFoo = enhance(Foo)
-    let a = <EnhancesFoo ref={someRef}/> //这么写不行
-    let a = <EnhancesFoo fooRef={someRef}/> //高阶组件没办法把组件透传到里面去
+    let a = <EnhancesFoo ref={someRef}/> //这么写不行 指向了增强的foo
+    let a = <EnhancesFoo fooRef={someRef}/> //高阶组件没办法把ref透传到里面去
 ```
 
-* 2020-08-31 16 32分左右
+```jsx
+function logProps(Component) {
+  class LogProps extends React.Component {
+    componentDidUpdate(prevProps) {
+      console.log('old props:', prevProps);
+      console.log('new props:', this.props);
+    }
+
+    render() {
+      const {forwardedRef, ...rest} = this.props;
+
+      // 将自定义的 prop 属性 “forwardedRef” 定义为 ref
+      return <Component ref={forwardedRef} {...rest} />;
+    }
+  }
+
+  // 注意 React.forwardRef 回调的第二个参数 “ref”。
+  // 我们可以将其作为常规 prop 属性传递给 LogProps，例如 “forwardedRef”
+  // 然后它就可以被挂载到被 LogProps 包裹的子组件上。
+  return React.forwardRef((props, ref) => {
+    return <LogProps {...props} forwardedRef={ref} />;
+  });
+}
+```
 
 ```javascript
 var a = class{}
@@ -1210,15 +1228,15 @@ class A{
 
 ## Portals
 
-> Portal 提供了一种将子节点渲染到存在于父组件以外的 DOM 节点的优秀的方案
+> Portal 提供了一种将子节点渲染到存在于父组件以外的 DOM 节点的优秀的方案(比如知乎长答案的收起渲染在答案之外)
 
-```javascript
+```jsx
 ReactDOM.createPortal(child, container)
 ```
 
 > 第一个参数（`child`）是任何[可渲染的 React 子元素](https://zh-hans.reactjs.org/docs/react-component.html#render)，例如一个元素，字符串或 fragment。第二个参数（`container`）是一个 DOM 元素。
 
-```html
+```jsx
 <!DOCTYPE html>
 <html>
 
@@ -1226,12 +1244,7 @@ ReactDOM.createPortal(child, container)
   <meta charset="UTF-8" />
   <title>Hello World</title>
   <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
-  <!-- 虚拟dom -->
   <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
-  <!-- 虚拟dom 绘制到浏览器 -->
-
-
-  <!-- Don't use this in production: -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
 
@@ -1281,7 +1294,7 @@ ReactDOM.createPortal(child, container)
         )
       }
     }
-    //this.resetButtonPortal看上去是div里的子元素 世界上是body的子元素 div被卸载 reset也会在body上被卸载
+    //this.resetButtonPortal从虚拟dom来说是section里的子元素 实际上是body的子元素 div被卸载 reset也会在body上被卸载
     //reset button 点击冒泡还是会到section上
     ReactDOM.render(
       <PortalTest />,
@@ -1310,7 +1323,7 @@ ReactDOM.createPortal(child, container)
 
 > 如果一个 class 组件中定义了 [`static getDerivedStateFromError()`](https://zh-hans.reactjs.org/docs/react-component.html#static-getderivedstatefromerror) 或 [`componentDidCatch()`](https://zh-hans.reactjs.org/docs/react-component.html#componentdidcatch) 这两个生命周期方法中的任意一个（或两个）时，那么它就变成一个错误边界。当抛出错误后，请使用 `static getDerivedStateFromError()` 渲染备用 UI ，使用 `componentDidCatch()` 打印错误信息。
 
-```html
+```jsx
 <!DOCTYPE html>
 <html>
 
@@ -1318,12 +1331,7 @@ ReactDOM.createPortal(child, container)
   <meta charset="UTF-8" />
   <title>Hello World</title>
   <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
-  <!-- 虚拟dom -->
   <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
-  <!-- 虚拟dom 绘制到浏览器 -->
-
-
-  <!-- Don't use this in production: -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
 
@@ -1367,7 +1375,7 @@ ReactDOM.createPortal(child, container)
       state = {
         showNormalContent: true
       }
-      componentDidCatch(e) {
+      componentDidCatch(e) { //错误边界
         console.log(e)
         this.setState({
           showNormalContent: false
@@ -1414,7 +1422,7 @@ ReactDOM.createPortal(child, container)
 > Context 提供了一个无需为每层组件手动添加 props，就能在组件树间进行数据传递的方法。
 >
 > Context 设计目的是为了共享那些对于一个组件树而言是“全局”的数据
-```javascript
+```jsx
 // Context 可以让我们无须明确地传遍每一个组件，就能将值深入传递进组件树。
 // 为当前的 theme 创建一个 context（“light”为默认值）。
 const ThemeContext = React.createContext('light');
@@ -1463,7 +1471,7 @@ const MyContext = React.createContext(defaultValue);
 
 #### Context.Provider
 
-```html
+```jsx
 <MyContext.Provider value={/* 某个值 */}>
 ```
 
@@ -1475,7 +1483,9 @@ const MyContext = React.createContext(defaultValue);
 
 #### Class.contextType
 
-```javascript
+> 这种方式好 但是只能接收上层的一个provider
+
+```jsx
 class MyClass extends React.Component {
   componentDidMount() {
     let value = this.context;
@@ -1509,7 +1519,7 @@ class MyClass extends React.Component {
 
 #### Context.Consumer
 
-```javascript
+```jsx
 <MyContext.Consumer>
   {value => /* 基于 context 值进行渲染*/}
 </MyContext.Consumer>
@@ -1523,7 +1533,7 @@ class MyClass extends React.Component {
 
 > context 对象接受一个名为 `displayName` 的 property，类型为字符串。React DevTools 使用该字符串来确定 context 要显示的内容。
 
-```javascript
+```jsx
 const MyContext = React.createContext(/* some value */);
 MyContext.displayName = 'MyDisplayName';
 
@@ -1533,7 +1543,7 @@ MyContext.displayName = 'MyDisplayName';
 
 
 
-```javascript
+```jsx
 <!DOCTYPE html>
 <html>
 
@@ -1541,12 +1551,7 @@ MyContext.displayName = 'MyDisplayName';
   <meta charset="UTF-8" />
   <title>Hello World</title>
   <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
-  <!-- 虚拟dom -->
   <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
-  <!-- 虚拟dom 绘制到浏览器 -->
-
-
-  <!-- Don't use this in production: -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
     div {
@@ -1610,7 +1615,7 @@ MyContext.displayName = 'MyDisplayName';
 </html>
 ```
 
-```html
+```jsx
 <!DOCTYPE html>
 <html>
 
@@ -1618,12 +1623,7 @@ MyContext.displayName = 'MyDisplayName';
   <meta charset="UTF-8" />
   <title>Hello World</title>
   <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
-  <!-- 虚拟dom -->
   <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
-  <!-- 虚拟dom 绘制到浏览器 -->
-
-
-  <!-- Don't use this in production: -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
     div {
@@ -1793,7 +1793,7 @@ export const ThemeContext = React.createContext(
 
 > themed-button.js
 
-```javascript
+```jsx
 import {ThemeContext} from './theme-context';
 
 class ThemedButton extends React.Component {
@@ -1815,7 +1815,7 @@ export default ThemedButton;
 
 > app.js
 
-```javascript
+```jsx
 import {ThemeContext, themes} from './theme-context';
 import ThemedButton from './themed-button';
 
@@ -1878,7 +1878,7 @@ export const ThemeContext = React.createContext({
 
 > theme-toggler-button.js
 
-```javascript
+```jsx
 import {ThemeContext} from './theme-context';
 
 function ThemeTogglerButton() {
@@ -1886,9 +1886,9 @@ function ThemeTogglerButton() {
   return (
     <ThemeContext.Consumer>
       {({theme, toggleTheme}) => (
-        <button          onClick={toggleTheme}
+        <button 
+          onClick={toggleTheme}
           style={{backgroundColor: theme.background}}>
-
           Toggle Theme
         </button>
       )}
@@ -1901,7 +1901,7 @@ export default ThemeTogglerButton;
 
 > app.js
 
-```javascript
+```jsx
 import {ThemeContext, themes} from './theme-context';
 import ThemeTogglerButton from './theme-toggler-button';
 
@@ -1952,7 +1952,7 @@ ReactDOM.render(<App />, document.root);
 
 > 因为 context 会使用参考标识（reference identity）来决定何时进行渲染，这里可能会有一些陷阱，当 provider 的父组件进行重渲染时，可能会在 consumers 组件中触发意外的渲染。举个例子，当每一次 Provider 重渲染时，以下的代码会重渲染所有下面的 consumers 组件，因为 `value` 属性总是被赋值为新的对象：
 
-```javascript
+```jsx
 class App extends React.Component {
   render() {
     return (
@@ -1966,7 +1966,7 @@ class App extends React.Component {
 
 > 为了防止这种情况，将 value 状态提升到父节点的 state 里：
 
-```javascript
+```jsx
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -1985,7 +1985,7 @@ class App extends React.Component {
 }
 ```
 
-```html
+```jsx
 <!DOCTYPE html>
 <html>
 
@@ -1993,12 +1993,7 @@ class App extends React.Component {
   <meta charset="UTF-8" />
   <title>Hello World</title>
   <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
-  <!-- 虚拟dom -->
   <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
-  <!-- 虚拟dom 绘制到浏览器 -->
-
-
-  <!-- Don't use this in production: -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
     div {
@@ -2012,9 +2007,6 @@ class App extends React.Component {
 <body>
   <div id="root"></div>
   <script type="text/babel">
-
-
-    let MyContext = React.createContext()
     class App extends React.Component {
       state = {
         ctx: { something: 'something' }
@@ -2091,7 +2083,7 @@ shouldComponentUpdate(nextProps, nextState) {
 
 ### shouldComponentUpdate的作用
 
-```html
+```jsx
 <!DOCTYPE html>
 <html>
 
@@ -2099,12 +2091,7 @@ shouldComponentUpdate(nextProps, nextState) {
   <meta charset="UTF-8" />
   <title>Hello World</title>
   <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
-  <!-- 虚拟dom -->
   <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
-  <!-- 虚拟dom 绘制到浏览器 -->
-
-
-  <!-- Don't use this in production: -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
     div {
@@ -2227,7 +2214,7 @@ shouldComponentUpdate(nextProps, nextState) {
 </html>
 ```
 
-```html
+```jsx
 <!DOCTYPE html>
 <html>
 
@@ -2235,12 +2222,7 @@ shouldComponentUpdate(nextProps, nextState) {
   <meta charset="UTF-8" />
   <title>Hello World</title>
   <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
-  <!-- 虚拟dom -->
   <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
-  <!-- 虚拟dom 绘制到浏览器 -->
-
-
-  <!-- Don't use this in production: -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
     div {
@@ -2253,7 +2235,7 @@ shouldComponentUpdate(nextProps, nextState) {
 <body>
   <div id="root"></div>
   <script type="text/babel">
-    class App extends React.PureComponent {
+    class App extends React.PureComponent { //只进行浅比较
       constructor(props) {
         super(props)
         this.state = {
@@ -2295,7 +2277,9 @@ shouldComponentUpdate(nextProps, nextState) {
 
 ## 与第三方库协同
 
-```html
+> 使用ref
+
+```jsx
 <!DOCTYPE html>
 <html>
 
@@ -2388,7 +2372,7 @@ shouldComponentUpdate(nextProps, nextState) {
 
 ## 函数组件
 
-```html
+```jsx
 <!DOCTYPE html>
 <html>
 
@@ -2502,7 +2486,7 @@ shouldComponentUpdate(nextProps, nextState) {
 >
 > 副作用函数还可以通过返回一个函数来指定如何“清除”副作用。
 
-```javascript
+```jsx
 useEffect(() => {
     ChatAPI.subscribeToFriendStatus(props.friend.id, handleStatusChange);
     return () => {
@@ -2606,7 +2590,7 @@ useEffect(function persistForm() {
 
 * 运行机制
 
-  ```html
+  ```jsx
   <!DOCTYPE html>
   <html>
   
@@ -2663,7 +2647,7 @@ useEffect(function persistForm() {
   </html>
   ```
 
-* useState 与fiberNode 2020-09-02 10-10
+* useState 与fiberNode 
 
 ![image-20200905093112064](33%20React2.assets/image-20200905093112064.png)
 
@@ -2671,7 +2655,7 @@ useEffect(function persistForm() {
 
 * useState即使记录自己的顺序
 
-  ```html
+  ```jsx
   <!DOCTYPE html>
   <html>
   
@@ -2732,7 +2716,7 @@ useEffect(function persistForm() {
 
   组件React调用 知道组件对应的实例是谁 useState就对哪个实例服务就ok
 
-```html
+```jsx
 <!DOCTYPE html>
 <html>
 
@@ -2806,11 +2790,8 @@ useEffect(function persistForm() {
     }
 
     debugger
-    invoke(f)
-    // let a = <Button />
-    // let a = createElement(Button)
-    // let b = <button />
-    // let b = createElement('button')
+    invoke(f) //invoke调用f
+
 
     // function Test() {
     //   return (
@@ -2862,9 +2843,9 @@ useEffect(function persistForm() {
 </html>
 ```
 
-* useStateCallback
+* useCallback and useEffect
 
-  ```html
+  ```jsx
   <!DOCTYPE html>
   <html>
   
@@ -2927,6 +2908,7 @@ useEffect(function persistForm() {
         )
       }
   
+     
       function Clock() {
         let [time, setTime] = useState(new Date())
         setTimeout(() => {
@@ -2942,7 +2924,7 @@ useEffect(function persistForm() {
         //   setInterval(() => {
         //     console.log(1)
         //   }, 1000)
-        // }, []) //[] 是依赖
+        // }, []) //[] 是依赖 不传每超出都更新
         useEffect(() => {
           let id = setInterval(() => {
             console.log(1)
@@ -2971,9 +2953,9 @@ useEffect(function persistForm() {
   </body>
   
   </html>
-  ```
-
-  ```html
+```
+  
+  ```jsx
   <!DOCTYPE html>
   <html>
   
@@ -3034,9 +3016,8 @@ useEffect(function persistForm() {
   
   </html>
   ```
-```
-  
-  ```html
+```jsx
+
   <!DOCTYPE html>
   <html>
   
@@ -3122,7 +3103,7 @@ useEffect(function persistForm() {
   </html>
 ```
 
-  ```html
+  ```jsx
   <!DOCTYPE html>
   <html>
   
