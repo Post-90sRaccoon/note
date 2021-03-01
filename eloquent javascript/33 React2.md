@@ -2953,8 +2953,10 @@ useEffect(function persistForm() {
   </body>
   
   </html>
-```
-  
+  ```
+
+  * useRef
+
   ```jsx
   <!DOCTYPE html>
   <html>
@@ -2978,7 +2980,7 @@ useEffect(function persistForm() {
         let [time, setTime] = useState(new Date())
         let [msg, setMsg] = useState('hello world')
         const btnRef = useRef(3)
-        // console.log(btnRef)
+        // console.log(btnRef) 刷新也能返回同一个对象 React.createRef返回新ref
   
         useEffect(() => {
           btnRef.current.style.border = '2px solid red'
@@ -3016,9 +3018,9 @@ useEffect(function persistForm() {
   
   </html>
   ```
+  * useContext
 ```jsx
-
-  <!DOCTYPE html>
+<!DOCTYPE html>
   <html>
   
   <head>
