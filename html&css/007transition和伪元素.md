@@ -19,7 +19,6 @@
       width: 100px;
       height: 100px;
       position: relative;
-      transition: 5s;
       transition-property: all;
       /* 哪些属性要渐变 */
       transition-duration: 2s;

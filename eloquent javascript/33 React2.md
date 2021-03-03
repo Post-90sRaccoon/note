@@ -3105,6 +3105,8 @@ useEffect(function persistForm() {
   </html>
 ```
 
+* hooks带来的好处和自定义hooks 
+
   ```jsx
   <!DOCTYPE html>
   <html>
