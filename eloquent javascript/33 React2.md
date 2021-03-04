@@ -1,4 +1,4 @@
-##深入JSX
+## 深入JSX
 
 * ​	JSX仅仅只是React.createElement(component,props,…children)函数的语法糖
 
