@@ -3107,6 +3107,8 @@ useEffect(function persistForm() {
 
 * hooks带来的好处和自定义hooks 
 
+* 可以逻辑复用
+
   ```jsx
   <!DOCTYPE html>
   <html>
@@ -3217,7 +3219,7 @@ useEffect(function persistForm() {
 
 ## 问题
 
-```html
+```jsx
 <!DOCTYPE html>
 <html lang="en">
 
@@ -3266,7 +3268,7 @@ useEffect(function persistForm() {
 </html>
 ```
 
-```html
+```jsx
 <!DOCTYPE html>
 <html lang="en">
 
@@ -3335,6 +3337,10 @@ useEffect(function persistForm() {
 
 ### 合成事件
 
+> react的事件是合成事件
+>
+> e.nativeEvent原生事件
+
 ```html
 <!DOCTYPE html>
 <html lang="en">
@@ -3393,7 +3399,7 @@ useEffect(function persistForm() {
 
 ## 自定义Hook
 
-```html
+```jsx
 <!DOCTYPE html>
 <html>
 
@@ -3438,7 +3444,7 @@ useEffect(function persistForm() {
       }, [])
 
       return height
-    }//set的值和原来一样不会更新
+    }//set的值和原来一样不会更新 所以只改变宽度不会更新高度
 
     function useWindowSize() {
       let width = useWindowWidth()
@@ -3528,7 +3534,11 @@ useEffect(function persistForm() {
 
 ### useMemo
 
-```html
+> 依赖不变 返回前一次的结果 不再运行函数了
+>
+> useEffect 副作用 dom更改后 useMemo dom更改时 对应shouldComponentUpdate
+
+```jsx
 <!DOCTYPE html>
 <html>
 
@@ -3597,7 +3607,7 @@ useEffect(function persistForm() {
 
 ### useInterval
 
-```html
+```jsx
 <!DOCTYPE html>
 <html>
 
@@ -3648,7 +3658,7 @@ useEffect(function persistForm() {
         if (time != null) {
           id = setInterval(() => {
             ref.current()
-            //ref永远是同一个ref
+            //ref永远是同一个ref 但current的f是新的
             //箭头函数是旧函数
             //time不变 interval不重新变 还能读到最新的f
           }, time)
@@ -3674,7 +3684,7 @@ useEffect(function persistForm() {
 
 ### 每分钟准时更新
 
-```html
+```jsx
 <!DOCTYPE html>
 <html>
 
@@ -3731,7 +3741,9 @@ useEffect(function persistForm() {
 
 ### useReducer
 
-```html
+> useState的替代方案 接收(state,action)=>newState 的reducer 第二个参数是初始状态
+
+```jsx
 <!DOCTYPE html>
 <html>
 
@@ -3766,10 +3778,11 @@ useEffect(function persistForm() {
 
     function Baz() {
       // const [state, dispatch] = useReducer(reducer, initialArg, init)
-      // init惰性初始化 如果传了init 初始值是把initalArg 传给init函数 得到的
+      // init惰性初始化 如果传了init函数 初始值是把initalArg 传给init函数 得到的 否则初始值是第二个参数
       const [state, dispatch] = useMyReducer(reducer, { count: 0 })
+      //旧的state通过dispatch的action更新 
 
-      return <div>
+      return <div>   
         <span>{state.count}</span>
         <button onClick={() => dispatch({ type: 'addCount', amount: 1 })}>add 1</button>
         <button onClick={() => dispatch({ type: 'addCount', amount: 2 })}>add 2</button>
@@ -3782,7 +3795,7 @@ useEffect(function persistForm() {
 
       ref.current = function (action) {
         setState(reducer(state, action))
-      }
+      }//ref每次都指向新的函数 读到新的state
 
       let dispatch = useCallback(function (action) {
         ref.current(action)
@@ -3791,8 +3804,9 @@ useEffect(function persistForm() {
       return [state, dispatch]
     }
 
-    // useCallback(f, deps)
+    // useCallback(f, deps)  相当于
     // useMemo(() => f, deps)
+    //useCallback 是useMemo实现的
 
     ReactDOM.render(
       <div>
@@ -3809,12 +3823,17 @@ useEffect(function persistForm() {
 
 ## 属性差异
 
-* 2020-09-03  14  23分钟
+* class要用className
+
+  ```jsx
+  <span className-{f(['a','foo','bar'],{active:!true})}></span>
+  ```
+
 * npm classNames
 
-### PureComponent 与 Memo
+### PureComponent 与 React.memo
 
-```html
+```jsx
 <!DOCTYPE html>
 <html>
 
@@ -3910,9 +3929,13 @@ useEffect(function persistForm() {
 </html>
 ```
 
+> div = React.createElement(‘div’)
+>
+> React.cloneElement(div) 深克隆
+
 ### React.children
 
-```html
+```jsx
 <!DOCTYPE html>
 <html>
 
