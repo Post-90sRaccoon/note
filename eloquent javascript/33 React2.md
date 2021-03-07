@@ -3981,7 +3981,9 @@ useEffect(function persistForm() {
 </html>
 ```
 
-```html
+> 嵌套组件书写方式
+
+```jsx
 <!DOCTYPE html>
 <html>
 
@@ -4034,13 +4036,15 @@ useEffect(function persistForm() {
         </div>
       )
     }
-
+	
+    //如何给comp的每个子元素加事件
+    //cloneElement 参数element props [...children] 返回元素props是新props和原始props浅层合并后结果 新元素取代现			有元素 原始元素的key和ref将保留
     function Comp(props) {
       console.log('comp props', props)
       return (
         <div>
           {React.Children.map(props.children, child => {
-            return React.cloneElement(child, {
+            return React.cloneElement(child,  {
               onClick: function () {
                 console.log(1)
               }

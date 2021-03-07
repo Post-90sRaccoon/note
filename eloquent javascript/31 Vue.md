@@ -3125,9 +3125,9 @@ new Vue({
       //每个组件实例 setup只执行一次
       setup() { //setup返回值从 app.$data里找到
         const editingIdx = ref(-1)
-        //ref指向原始数据 创建ref对象 不然直接-1 原始数据类型无法修改
+        //ref指向原始数据 创建指向{value:1}对象 不然直接-1 原始数据类型无法修改
         //不能直接修改对象 修改对象的属性
-        //{value:1}
+        //{value:-1}
         console.log(editingIdx)
         // editingIdx.value = -1  //赋值的时候要写.value
         const showingCategory = ref('all')
@@ -3139,7 +3139,7 @@ new Vue({
           completed: false
         }])
 
-        function addTodo(e) {
+         //function addTodo(e) {
           // todos=[
           //   ...todos,
           //   {
@@ -3148,7 +3148,7 @@ new Vue({
           //   }
           // ]
           //上面的写法是不行的 改变的是todos这个局部变量
-          //return返回的是局部变量 指向的对象 赋值是改了指向 没用
+          //return返回的是局部变量指向的对象 赋值是改了指向 没用
 
           todos.value.push({
             content: e.target.value.trim(),
