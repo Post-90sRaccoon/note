@@ -1,15 +1,57 @@
-## Concurrent 模式介绍
+## Concurrent 模式介绍(文档)
+
+* fiber架构 分开渲染 空闲时间相应操作 中间交互取消显示 后面就不渲染了 
 
 * 抛出错误，react卸载组件树。
 * suspense 没获取到数据就抛出promise
+* 没卸载 suspense 里面有componentDidcatch 判断抛出的是promise对象 显示callback 当这个promise状态完成 显示组件
 
-> 2020-09-07 前两个 文档
+#### suspense大致实现
 
-## Vuex 与 Redux  看learn redux
+```javascript
+class MySuspense extends React.Component {  
+      state = {
+        loading: false
+      }
+      componentDidCatch(e) {
+        if (e instanceof Promise) {
+          this.setState({
+            loading: true
+          })
+          e.then(() => {
+            this.setState({
+              loading: false
+            })
+          })
+        }
+      }
+      render() {
+        if(this.state.loading){
+          return this.props.fallback
+        }else{
+          return this.props.children
+        }
+      }
+    }
+```
+
+```jsx
+<Suspense fallback={<Spinner />}>
+  <ProfilePage />
+</Suspense>
+```
+
+> https://codesandbox.io/s/frosty-hermann-bztrp
+
+#### useTransition()
+
+#### suspenseList  
+
+## Vuex 与 Redux
 
 * 数据放在单独一个地方，所有组件与之通信
 
-```html
+```jsx
 <!DOCTYPE html>
 <html>
 
