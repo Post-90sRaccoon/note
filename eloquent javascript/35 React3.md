@@ -132,6 +132,44 @@ class MySuspense extends React.Component {
 >
 > npm i immer
 
+```javascript
+function todoReducer(state, action/*{type:'toggleTodoStatus',todo:{}}*/) {
+  switch (action.type) {
+    case 'setEditingIdx':
+      return {
+        ...state,
+        editingIdx: action.index
+      }
+    default:
+      return state
+  }
+}
+store = Redux.createStore(todoReducer, {
+  editingIdx: -1,
+  category: 'all',
+  todos: [
+    {
+      content: 'eat',
+      completed: true
+    },
+    {
+      content: 'eat',
+      completed: true
+    },
+    {
+      content: 'eat',
+      completed: false
+    },
+  ]
+})
+```
+
+> `store.getState()`
+>
+> `store.dispatch({'setEditingIdx',2})`
+>
+> `store.subscribe(()=>{console.log('data change')})`
+
 ### 自己写store
 
 ```javascript
@@ -161,4 +199,71 @@ class Store{
 }
 ```
 
-* 不可变数据结构 https://github.com/sunyongjian/blog/issues/33
+#### 实际使用
+
+* store.js
+
+```javascript
+import { createStore } from 'redux'
+import { produce } from 'immer'
+
+let actions = {
+  setEditingIdx(state, action) {
+    state.editingIdx = action.index
+  },
+  addTodo(state, action) {
+    state.todos.push({
+      content: action.todoText,
+      completed: false
+    })
+  },
+  deleteTodo(state, actioin) {
+
+  }
+}
+function todoReducer(state, action) {
+  let f = actions[action.type]
+  if (f) {
+    return produce(state, draft => {
+      f(draft, action)
+    })
+    //return produce(f)(state,action)
+  } else {
+    return state
+  }
+}
+
+export const store = createStore(todoReducer, {
+  editingIdx: -1,
+  category: 'all',
+  todos: [{
+    content: 'eat',
+    completed: true,
+  }, {
+    content: 'drink',
+    completed: false,
+  }]
+})
+
+export default store
+```
+
+* app.js
+
+  ```jsx
+  import './App.css';
+  import store from './store'
+  import { Provider } from 'react-redux'
+  
+  function App() {
+    return (
+      <Provider store={store}>
+        <TodoApp />
+      </Provider>
+    );
+  }
+  
+  export default App;
+  ```
+
+  
