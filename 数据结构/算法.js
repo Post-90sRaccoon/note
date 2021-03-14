@@ -134,3 +134,61 @@ function swap(ary, a, b) {
   ary[a] = ary[b]
   ary[b] = temp
 }
+
+//冒泡排序 两两比较 一次确定一个最大(小)值
+var sortArray = function (nums) {
+  // 确定每一轮的结束位置 从倒数第二个到第一个
+  for (let j = nums.length - 1; j >= 0; j--) {
+    let flag = true
+    for (let i = 0; i < j; i++) {
+      if (nums[i] > nums[i + 1]) {
+        let t = nums[i]
+        nums[i] = nums[i + 1]
+        nums[i + 1] = t
+        flag = false
+      }
+    }
+    if (flag) {
+      // 一次遍历没有执行换位 说明已经排序好了
+      break
+    }
+  }
+  return nums
+};
+
+
+// 插入排序 数组[] 插入nums[0] 再插入nums[1] .... 二分法找插入位置
+var sortArray = function (nums) {
+  // i指向每个要插入进来的元素
+  for (let i = 1; i < nums.length; i++) {
+    let temp = nums[i]
+    let j = i - 1
+    // j指向排好序的元素的最后一个
+    while (nums[j] > temp && j >= 0) {
+      nums[j + 1] = nums[j]
+      j--
+    }
+    nums[j + 1] = temp
+  }
+  return nums
+}
+
+// 计数排序 范围有限区间的数字 [min,max]
+//准备最大数个空桶 Array(max - min + 1).fill(0)
+//读到数字在对应下标处+1
+//-50000 <= nums[i] <= 50000
+
+var sortArray = function (nums) {
+  let arr = Array(1000001).fill(0)
+  for (let i = 0; i < nums.length; i++) {
+    arr[nums[i] + 50000]++
+  }
+  let j = 0
+  for (let i = 0; i < arr.length; i++) {
+    while (arr[i] > 0) {
+      nums[j++] = i - 50000
+      arr[i]--
+    }
+  }
+  return nums
+}

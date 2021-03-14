@@ -857,7 +857,6 @@ var a = function () {
   }
   return array
 }
-
 ```
 
 ## Binding
@@ -879,7 +878,7 @@ console.log(f3())
 //8
 
 //apply 接收参数数组 返回函数执行值
-//bing  接收参数     返回参数值绑定的函数
+//bind  接收参数     返回参数值绑定的函数
 ```
 
 #### 名字返回人

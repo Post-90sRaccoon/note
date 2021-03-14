@@ -644,17 +644,6 @@ s.add()
 #### 链表相邻两个节点交换
 
 ```javascript
-var swapPairs = function (head) {
-  if (head === null || head.next === null) {
-    return head
-  }
-
-  let p = head.next
-  head.next = swapPairs(p.next)
-  p.next = head
-  return p
-};
-
 var swapPairs = function(head) {
     const dummyHead = new ListNode(0);
     dummyHead.next = head;
