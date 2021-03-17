@@ -177,7 +177,7 @@ var minimumTotal = function (triangle) {
 };
 
 //空间优化
-//f[i][j]f[i][j] 只与 f[i-1][..]f[i−1][..] 有关，而与 f[i-2][..]f[i−2][..] 及之前的状态无关，因此不必存储这些无关的状态。
+//f[i][j] 只与 f[i-1][..] 有关，而与 f[i-2][..] 及之前的状态无关，因此不必存储这些无关的状态。
 //使用两个长度为n的一维数组进行转移，将i根据奇偶性映射到其中一个一维数组，那么i−1就映射到了另一个一维数组。
 var minimumTotal = function (triangle) {
   let n = triangle.length

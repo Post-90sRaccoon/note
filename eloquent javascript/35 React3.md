@@ -180,23 +180,55 @@ class Store{
     this.subscribes = []
   } 
 
-  getState(){
+  getState()=>{
     return this.state
   }
-  dispatch(action){
+  dispatch(action)=>{
     this.state = this.reducer(this.state,action)
     for(let f of this.subscribes){
       f()
     }
     return action
   }
-  subscribe(f){
+  subscribe=(f)=>{
     this.subscribes.push(f)
-    return function unsubscribe(){
+    let  unsubscribe = ()=>{
       this.subscribes = this.subscribes.filter(it=>it!==f)
     }
+    return unsubscribe
   }
 }
+```
+
+```jsx
+import React, { createContext, useContext, useEffect } from 'react'
+
+let StoreContext = createContext()
+
+export function Provider({ store, children }) {
+  let [ctxValue, setCtxValue] = useState({ getState: store.getState, dispatch: store.dispatch })
+  useEffect(() => {
+    store.subscribe(() => {
+      setX({ getState: store.getState, dispatch: store.dispatch })
+    })
+  }, [x]) //触发更新
+  return (
+    <StoreContext.Provider value={ctxValue}>
+      {children}
+    </StoreContext.Provider>
+  )
+}
+
+export function useSelector(f) {
+  let store = useContext(StoreContext)
+  return f(store.getState())
+}
+
+export function useDispatch() {
+  let store = useContext(StoreContext)
+  return store.dispatch
+}
+
 ```
 
 #### 实际使用
@@ -205,7 +237,7 @@ class Store{
 
 ```javascript
 import { createStore } from 'redux'
-import { produce } from 'immer'
+import { produce, original } from 'immer'
 
 let actions = {
   setEditingIdx(state, action) {
@@ -217,8 +249,25 @@ let actions = {
       completed: false
     })
   },
-  deleteTodo(state, actioin) {
+  deleteTodo(state, action) {
 
+  },
+  setAllCompleted(state, action) {
+    state.todos.forEach(it => {
+      it.completed = true
+    })
+  },
+  setAllActive(state, action) {
+    state.todos.forEach(it => {
+      it.completed = false
+    })
+  },
+  toggleTodoStatus(state, action) {
+    let oriTodos = original(state.todos)
+    let idx = oriTodos.indexOf(action.todo)
+    if (idx >= 0) {
+      state.todos[idx].completed = !state.todos[idx].completed
+    }
   }
 }
 function todoReducer(state, action) {
@@ -233,7 +282,7 @@ function todoReducer(state, action) {
   }
 }
 
-export const store = createStore(todoReducer, {
+export default createStore(todoReducer, {
   editingIdx: -1,
   category: 'all',
   todos: [{
@@ -241,11 +290,11 @@ export const store = createStore(todoReducer, {
     completed: true,
   }, {
     content: 'drink',
-    completed: false,
+    completed: true,
   }]
 })
 
-export default store
+
 ```
 
 * app.js
@@ -264,6 +313,135 @@ export default store
   }
   
   export default App;
+  ```
+
+* TodoHeader.js
+
+  ```jsx
+  import React from 'react'
+  import { useDispatch, useSelector } from 'react-redux';
+  
+  export default function TodoHeader() {
+    let isAllCompleted = useSelector(state => { //store里面getState传到这里了
+      return state.todos.every(it => it.completed)
+    })
+    let dispatch = useDispatch() //为上层store dispatch
+  
+    function handle() {
+      if (isAllCompleted) {
+        dispatch({
+          type: 'setAllActive'
+        })
+      } else {
+        dispatch({
+          type: 'setAllCompleted'
+        })
+      }
+    }
+  
+    function addTodo(e) {
+      if (e.key == 'Enter') {
+        let todoText = e.target.value.trim()
+        if (todoText) {
+          dispatch({
+            type: 'addTodo',
+            todoText: todoText
+          })
+        }
+        e.target.value = ''
+      }
+    }
+    return (
+      <div>
+        <input type="checkbox" checked={isAllCompleted} onChange={handle} />
+        <input type="text" onKeyUp={addTodo} />
+      </div>
+    )
+  }
+  ```
+
+* class 用法
+
+  ```javascript
+  import React, { Component } from 'react'
+  import { connect } from 'react-redux'
+  
+  class TodoFooter extends Component {
+    render(){
+      console.log(this.props)
+      return <div>footer</div>
+    }
+  }
+  
+  //useSelector 映射为组件props
+  function mapStateToProps(state){
+    return {
+      leftCount: state.todos.filter(it =>!it.completed).length
+    }
+  }
+  //useDispatch 
+  function mapDispatchToProps(dispatch){
+    return {
+      setCategory(category){
+        dispatch({
+          type:'setCategory',
+          category
+        })
+      }
+    }
+  }
+  
+  export default connect(mapStateToProps,mapDispatchToProps)(TodoFooter)
+  ```
+
+  * 实现connect
+
+  ```javascript
+  import React, { Component } from 'react'
+  import { connect } from 'react-redux'
+  
+  class TodoFooter extends Component {
+    render() {
+      console.log(this.props)
+      return <div>footer</div>
+    }
+  }
+  
+  //useSelector 映射为组件props
+  function mapStateToProps(state) {
+    return {
+      leftCount: state.todos.filter(it => !it.completed).length
+    }
+  }
+  //useDispatch
+  function mapDispatchToProps(dispatch) {
+    return {
+      setCategory(category) {
+        dispatch({
+          type: 'setCategory',
+          category
+        })
+      }
+    }
+  }
+  
+  function connext(mapState, mapDispatch) {
+    return function (Comp) {
+      return class extends React.PureComponent {
+        static contextType = StoreContext
+  
+        render() { 
+          let context = this.context
+          let { children, ...props } = this.props
+          let state = mapState(context.getState())
+          let dispatchs = mapDispatch(context.dispatch)
+          return <Comp {...props} {...state} {...dispatchs}>{children}</Comp>
+        }
+      }
+    }
+  }
+  
+  export default connect(mapStateToProps, mapDispatchToProps)(TodoFooter)
   ```
 
   
