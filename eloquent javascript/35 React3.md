@@ -444,4 +444,217 @@ export default createStore(todoReducer, {
   export default connect(mapStateToProps, mapDispatchToProps)(TodoFooter)
   ```
 
+  * redux 中间件
+
+```javascript
+s = Redex.createStore(function reducer() {
+
+}, {},
+  Redux.applyMiddleware(
+    function a(store) {
+      return function aa(d) { //这个d是下一个dispatch
+        return function dispatch(action) {
+          //最终拿到的是这个函数
+          d(action)
+        }
+      }
+    }, function b(store) {
+      return function bb(d) { //这个d是redux原始dispatch
+        return function dispatch(action) {
+          d(action)
+        }
+      }
+    }
+  )
+)
+
+//往store里面dispatch一个promise
+s = Redex.createStore(function reducer() {
+
+}, {},
+  Redux.applyMiddleware(
+    function a(store) {
+      return function aa(nextDispatch) {
+        return function dispatch(action) {
+          nextDispatch(action)
+        }
+      }
+    }, function promiseDispatch(store) {
+      return function bb(nextDispatch) {
+        return function dispatch(action) {
+          if (action instanceof Promise) {
+            return action.then(value => {
+              nextDispatch(value)
+            })
+          } else {
+            return nextDispatch(action)
+          }
+        }
+      }
+    }
+  )
+)
+```
+
+* vuex  用use
+
+  ```javascript
+  let store = new store({
+    state: {},
+    mutations: {//数据变更}
+      addTodo(state, payload) {//payload push的值
+        stete.todos.push({
+          content: payload.TodoText,
+          completed: false
+        })
+      }
+    }
+  })
   
+  //import store from './store'
+  new Vue({
+    store,
+    router,
+    render: h => h(App)
+  }).$mount('#app')
+  
+  this.$store.commit({ type: 'addTodo', todoText: this.todoText })
+  ```
+
+  * 组件可以通过this.$store.state 访问
+
+  * 不要使用双向绑定 使用mutation改变数据
+
+* 计算属性 mapState
+
+```javascript
+//import {mapState} from 'vuex'
+export default {
+  computed: {
+    ...mapState({
+      todos: state => state.todos,
+      isAllChecked: state=>state.todos.every(it=>it.completed)
+    }),
+    ...mapState(['todos','editingIdx'])
+  }
+}
+```
+
+* 实现mapState
+
+```javascript
+function mapState(ary) {
+  let obj = {}
+  for (let key of ary) {
+    obj[key] = function () {
+      return this.$store.state[ary]
+    }
+  }
+  return obj
+}
+
+function mapState(obj) {
+  let result = {}
+  for (let key in obj) {
+    let val = obj[key]
+    result[key] = function () {
+      return val(this.$store.state)
+    }
+  }
+  return result
+}
+```
+
+* getter计算属性
+
+```javascript
+import store from "./store";
+
+export default new store({
+  getter: {
+    showingTodos(state, getters) {
+
+    },
+    isAllCompleted(state,getters){
+      
+    }
+  }
+})
+
+//xxx.vue
+import { mapGetters } from 'vuex'
+export default {
+  computed: { ...mapGetters(['isAllCompleted']) }
+} 
+```
+
+其实mapState和mapGetters的真正区别在于：
+
+* mapState在组件层，整合组件资源，进行个性化操作，也就是某个.vue。适用于获取纯状态树上的原始数据，可能在每个页面都要再进行计算。
+* mapGetters在store层，整合store层资源，进行个性化操作，也就是getters.js。适于获取状态树上的处理后的数据，不需要在每个页面进行计算，store层直接算好了。多个组件都需要的数据。
+
+
+
+####  异步操作 使用action
+
+```javascript
+//store.js
+export default new store({
+  actions: {
+    getInitialTodos({ commit }) {
+      setTimeout(() => {
+        commit('addTodo', { todoText: 'foo' })
+      }, 5000);
+    }
+  }
+})
+```
+
+* action store.dispatch(actionName,payload)触发
+* mutations store.commit(mutationName,payload)触发
+
+#### module
+
+```javascript
+//把store 拆分成更小的模块
+
+const moduleA = { state: () => { } }
+const moduleB = { 
+  state: () => { },
+  getters:{
+    seta(state,getters,rootState){
+      //state是局部state rootState是全局state
+    }
+  } 
+}
+
+const store = new Vuex.Store({
+  modlues: {
+    a: moduleA,
+    b: moduleB,
+  }
+})
+
+store.commit('a/addTodo')
+store.commit('b/isAllSelected')
+```
+
+vue但文件组件css scoped 只对单文件组件内的生效 通过加data-属性
+
+```css
+<style scoped>
+  div{
+    border:8px solid red;
+  }
+</style>
+//局部生效
+```
+
+#### react css
+
+```javascript
+//css module
+import xxx from 'yy.css'
+<div className={xxx.foo}></div>
+```
+
