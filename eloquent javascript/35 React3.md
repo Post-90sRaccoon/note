@@ -658,3 +658,203 @@ import xxx from 'yy.css'
 <div className={xxx.foo}></div>
 ```
 
+
+
+React 构造函数里不要执行副作用 比如subscribe 开发环境下 运行两次 只挂载一个组件 就会出现问题
+
+
+
+### websocket
+
+```javascript
+const WebSocket = require('ws')
+const wss = new WebSocket.Server({ port: 8085 })
+//浏览器不对ws跨域限制 服务器可以限制
+//ws协议相当于tcp上实现了消息机制 解决了粘包
+//相当于tcp字节流中放了消息中的隔板
+//ws协议使用http协议进行握手 tcp连接建立成功后先发http报文进行协议升级的协商 成功后tcp连接上就发ws报文
+//ws服务器一般是集成到http服务器上的 接管node http server的upgrade事件
+//只能发字符串或者二进制数据
+//没有断开重连机制
+//socket.io 可以支持低版本降级为长轮询 自动重连 自动序列化反序列化 ws抽象成了一个基于事件的
+
+wss.on('connection', function connection(ws, req/*该ws握手阶段的http请求对象*/) {
+  ws.on('message', function imcoming(message) {
+    console.log('received: %s', message)
+    ws.send(message.toString().toUpperCase())
+  })
+
+  let i = 0
+  setInterval(() => {
+    ws.send(i++ + '')
+  }, 2000)
+  ws.send('something')
+})
+
+// ws = new WebSocket('ws://localhost:8085/foo')
+// ws.send('hello')
+// ws.onmessage = e => {
+//   console.log(e.data)
+// }
+
+
+const http = require('http')
+const WebSocket = reuqire('ws')
+const app = express()
+
+const server = http.createServer(app)
+const wss = new WebSocket.Server({server})
+
+wss.on('connection',(ws,req)=>{
+
+})
+
+useEffect(() => {
+  let ws = new WebSocket(`/vote/${id}`)
+  return () => ws.close()
+}, [id])
+```
+
+#### 上线
+
+> npm run bulid
+>
+> build文件夹 放到后端文件夹里面 加中间件 app.use(express.static(__dirname+‘/build’))
+
+### TypeScript
+
+> TS 是 JS 的超集
+>
+> TS 静态类型语言 
+>
+> ts允许为一份已经存在的由原神js编写的代码增加一份类型声明文件
+>
+> 静态类型由于书写时就能确定所有变量的类型，带来的好处是编辑器及相关的语法检查
+
+```typescript
+function add(a:number,b:number):number{
+  return a+b
+}
+
+var ary:Array<number> = [1,2,3]
+
+let obj:object = ary.push({})
+//错误ary.push返回数字 ary里面只能放数字
+
+class People extends Array{
+  x:number 
+  y:number
+  constructor(name:string,age:number){
+    super(age) //数组只接一个name时 接数字
+    this.x=1
+    this.y =2
+  }
+  foo(a:string,b:number):People{
+    let r =new People(a,b)
+    return r
+  }
+  bar():void{
+
+  }
+}
+
+let a:Array<number>=[1,2,3] 
+
+//没确定具体类型
+class PriorityQueue<T>{
+  elements:T[]
+  //elements Array<T>
+  constructor(predicate:(T)=>number){
+    this.elements = []
+  }
+  push(el:T){
+    this.elements.push(EL)
+  }
+}
+```
+
+#### webpack
+
+> 打包：将代码从入口文件开始打包为一个单一的文件
+>
+> 转换：将不是js的文件通过loader转换为等价js文件
+>
+> TreeShaking：摇树优化 没有直接间接使用的函数 类 value 不会打包 减少打包文件体积 需要es module书写 因为es module是静态的
+>
+> Code Spliting 代码分割
+>
+>  打包所有业务逻辑和框架打包到单一文件 太大
+>
+>  打包到一个文件所有功能不会都被用户使用
+>
+>  用户打开页面只加载入口功能 
+
+```javascript
+window.onresize = async function(e){
+  let {default:Layout,foo} = await import('./layout.js')
+  Layout.default//默认导出
+  Layout.foo //具名导出 
+}
+let Clock =React.lazy(()=>import('./Clock.js'))
+function App(){
+  return (
+    {
+      showClock && <Clock />
+    }
+  )
+}
+
+//a.js 
+window.onClick = async function(e){
+  let modB = await import('./b.js')
+  console.log(modB)
+}
+//b.js
+export var a = 8
+export var b = 9
+
+//webpack a.js
+//创建一个html文件 把main.js加载进来
+<script src="main.js"></script>
+//vue 异步组件webpack用法
+```
+
+> loader与plugin的区别
+>
+>  loader用来转换非js文件
+>
+>  css-loader,eslint-loader,babel-loader,image-loader,file-loader,style-loader 
+>
+>  根据不同拓展名 转换为js
+>
+>  plugin 用来增强webpack功能的
+>
+>   common-chunk-plugin
+>
+>    将第三方代码与自己写的代码分开打包 第三方代码的打包结果会比较容易不变化
+>
+>   webpack-html-plugin 
+>
+>    自动吧打包结果嵌入html文件
+
+> npm run eject 弹出配置文件
+>
+> HotModuleReplacementPlugin 
+>
+> 模块热重载 页面不重新加载的情况下 模块的新代码就能在浏览器生效 并不是所有模块都可以这么用 css可以
+>
+> MiniCssExtractPlugin
+>
+>  将所有的css文件从依赖树中提取出来，放入单独的css文件而不打包在js里
+>
+> GenerateSw
+>
+>  生成 service worker 
+
+> babel 
+>
+>  js语言高版本到低版本的编译器
+>
+>  plugin:针对某一个语法的转换用的功能插件
+>
+>  preset:一系列plugin的集合
