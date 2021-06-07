@@ -209,9 +209,9 @@ export function Provider({ store, children }) {
   let [ctxValue, setCtxValue] = useState({ getState: store.getState, dispatch: store.dispatch })
   useEffect(() => {
     store.subscribe(() => {
-      setX({ getState: store.getState, dispatch: store.dispatch })
+      setCtxValue({ getState: store.getState, dispatch: store.dispatch })
     })
-  }, [x]) //触发更新
+  }) //触发更新
   return (
     <StoreContext.Provider value={ctxValue}>
       {children}
@@ -373,13 +373,13 @@ export default createStore(todoReducer, {
     }
   }
   
-  //useSelector 映射为组件props
+  //作用类似useSelector 将state中需要的值映射为组件props
   function mapStateToProps(state){
     return {
       leftCount: state.todos.filter(it =>!it.completed).length
     }
   }
-  //useDispatch 
+  //作用类似useDispatch props里的某些属性是函数 函数调用disp  atch  
   function mapDispatchToProps(dispatch){
     return {
       setCategory(category){
@@ -441,9 +441,13 @@ export default createStore(todoReducer, {
     }
   }
   
+  function createStore(reducer,init){
+    return new Store(r)
+  }
+  
   export default connect(mapStateToProps, mapDispatchToProps)(TodoFooter)
   ```
-
+  
   * redux 中间件
 
 ```javascript
