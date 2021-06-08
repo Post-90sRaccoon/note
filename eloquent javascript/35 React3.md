@@ -442,7 +442,7 @@ export default createStore(todoReducer, {
   }
   
   function createStore(reducer,init){
-    return new Store(r)
+    return new Store(reducer,init)
   }
   
   export default connect(mapStateToProps, mapDispatchToProps)(TodoFooter)
@@ -465,12 +465,13 @@ s = Redex.createStore(function reducer() {
     }, function b(store) {
       return function bb(d) { //这个d是redux原始dispatch
         return function dispatch(action) {
-          d(action)
+          d(action) 
         }
       }
     }
   )
 )
+//s.dispatch({type:foo}) 执行到a到aa到dispatch 然后到b
 
 //往store里面dispatch一个promise
 s = Redex.createStore(function reducer() {
@@ -480,7 +481,7 @@ s = Redex.createStore(function reducer() {
     function a(store) {
       return function aa(nextDispatch) {
         return function dispatch(action) {
-          nextDispatch(action)
+          returnnextDispatch(action)
         }
       }
     }, function promiseDispatch(store) {
