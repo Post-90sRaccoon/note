@@ -5,7 +5,7 @@
 ### Numbers
 
 * 用64位存储number类型
-* console.log(1..toString(2))    转换为2进制
+* Number.toString(2))    转换为2进制
 
 #### Special Number
 
@@ -36,33 +36,23 @@
 
   \\\   \
 
-*  字符串可以用 + 拼接
-
 ### Unary operator
 
 * typeof
 
 ### Boolean value
 
-* true and false
+![image-20200107213723110](001%20Values%20Types,and%20Operators.assets/image-20200107213723110.png)
 
-  ![image-20200107213723110](001%20Values%20Types,and%20Operators.assets/image-20200107213723110.png)
-  
-  ![image-20200108080957494](001%20Values%20Types,and%20Operators.assets/image-20200108080957494.png)
-  
-  ![image-20200108081057905](001%20Values%20Types,and%20Operators.assets/image-20200108081057905.png)
-  
-  ![image-20200108081625935](001%20Values%20Types,and%20Operators.assets/image-20200108081625935.png)
-  
-  ![image-20200108081127189](001%20Values%20Types,and%20Operators.assets/image-20200108081127189.png) 
+![image-20200108080957494](001%20Values%20Types,and%20Operators.assets/image-20200108080957494.png)
 
-> 不同类型用 == 比
->
-> 数字和字符串   字符串转换成数
->
-> 布尔值和任何类型比较 布尔值都变成数字
->
-> 对象和 字符串或数比   对象valueOf 或者 toString
+![image-20200108081057905](001%20Values%20Types,and%20Operators.assets/image-20200108081057905.png)
+
+![image-20200108081625935](001%20Values%20Types,and%20Operators.assets/image-20200108081625935.png)
+
+![image-20200108081127189](001%20Values%20Types,and%20Operators.assets/image-20200108081127189.png) 
+
+
 
 #### Comparisons
 
@@ -70,7 +60,7 @@
 
 * 字符字符串按ascii码比较大小    str.charCodeAt()   String.fromCharCode(num)
 
-* console.log(NaN == NaN)   false
+* NaN == NaN   false
 
 #### logical operator
 
@@ -82,14 +72,10 @@
 
 * ||优先级最低 小于 &&
 
-* ternary 三元运算符 条件运算符  true?1:2
-
 #### Undefined Values
 
 * null   类型object
-*  undefined  类型undefined
-* undefined == null    true
-* 自身也相等
+* undefined  类型undefined
 * null ==  ‘’   //false
 
 ### Automatic Type Conversion
@@ -113,9 +99,10 @@
 * ==字符串转换为数 空0 非空NaN 转换为布尔 空0 非空1==
 
 ```javascript
-console.log(2 && 3 && 4 && 5)
+2 && 3 && 4 && 5
 //5  没有false 返回最后一个
-console.log(2 || 3 || 4 || 5)
+2 || 3 || 4 || 5
+
 //2
 // 只在必要的时候计算 否则右面的表达式不会运行 条件运算符也是这样
 ```

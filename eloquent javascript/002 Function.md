@@ -4,36 +4,30 @@
 
 * ==\'' ''  0== 
 
-* null == undefined    true
-
-* null === undefined false   null object  undefined  undefined
-
-  ```javascript
-  console.log('aa' == true)
-  //false
-  console.log('true' == true)
-  //false
-  console.log('1' == true)
-  //true
-  //任何值和布尔等于 toNumber(boolean)
-  
-  //判断闰年
-  (x % 400 == 0) ||((x % 4 == 0) && (x % 100 != 0))
-  //判断100以内质数
-  (x != 2 && x % 2 == 0)||(x != 3 && x % 3 == 0)||(x != 5 && x % 5 == 0)||(x != 7 && x % 7 == 0)
-  
-  NaN = 888
-  undefined = 999
-  //可以赋值 但值不变
-  ```
+    ```javascript
+    console.log('aa' == true)
+    //false
+    console.log('true' == true)
+    //false
+    console.log('1' == true)
+    //true
+    //任何值和布尔等于 toNumber(boolean)
+    
+    //判断闰年
+    (x % 400 == 0) ||((x % 4 == 0) && (x % 100 != 0))
+    //判断100以内质数
+    (x != 2 && x % 2 == 0)||(x != 3 && x % 3 == 0)||(x != 5 && x % 5 == 0)||(x != 7 && x % 7 == 0)
+    
+    NaN = 888
+    undefined = 999
+    //可以赋值 但值不变
+    ```
 
 #### Equality Comparison
 
 * x==y
 
-* ‘aa’==3 false    aa转换成NaN
-
-  ![image-20191227211433840](002%20Function.assets/image-20191227211433840.png)
+    ![image-20191227211433840](002%20Function.assets/image-20191227211433840.png)
 
 ![image-20191227210637999](002%20Function.assets/image-20191227210637999.png)
 
@@ -653,26 +647,6 @@ function getDayOfMonth(m, y) {
 
 #### 作用域
 
-```javascript
-var x = 5
-var a = function () {
-  x = x + 5
-  return x
-}
-a()
-console.log(x)
-// 10
-var x = 5
-var a = function () {
-  x = x + 5
-  return x
-}
-a()
-console.log(a())
-console.log(x)
-//15
-```
-
 * 对于任何一个变量的访问，都从代码中书写该变量的位置开始查找，逐级往上层作用域查找。
 
 ```javascript
@@ -719,14 +693,6 @@ function f () {
   //8
 }
 
-function f() {
-  i = 4
-  console.log(i)
-   
-  console.log(i)
-}
-f()
-// 4 5
 
 function f() {
   for (var i = 0; i < 4; i++) {
@@ -782,10 +748,7 @@ console.log(a * a)
 var a = 8
 console.log(a * a)
 
-var a = 8
-console.log(a * a)
-
-// 64 64 64
+// 64 64 6
 
 let a = 8
 console.log(a * a)
