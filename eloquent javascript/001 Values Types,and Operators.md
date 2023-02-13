@@ -5,7 +5,7 @@
 ### Numbers
 
 * 用64位存储number类型
-* Number.toString(2))    转换为2进制
+* Number.toString(2)   转换为2进制
 
 #### Special Number
 

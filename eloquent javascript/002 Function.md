@@ -2,8 +2,6 @@
 
 * 'a'-'a' NaN    ==字符串转化为数NaN 转化为布尔 空0 非空1==
 
-* ==\'' ''  0== 
-
     ```javascript
     console.log('aa' == true)
     //false
@@ -43,10 +41,6 @@
 
 * function 的类型为function
 
-  console.log
-
-  获取console 变量的log属性
-
 * Math.trunc()
 
   Math.floor()
@@ -85,15 +79,8 @@ z=3 //a+1 b+2 语句也会执行
 
   'FADS'  NaN
 
-  ```javascript
-  console.log(a)
-  //3.14
-  console.log(typeof (a))
-  //string
-  ```
-
   
-
+  
 * isNaN() 是否是一个数值类型的值/不能被转换为数值 全局方法
 
   is Not a Number
@@ -137,10 +124,10 @@ z=3 //a+1 b+2 语句也会执行
 #### 位运算符
 
 * 只支持整数  先被转换为32位整数 
-  * 小数会舍掉小数部分
+  * 小数会舍掉小数部分 
   * 超过32位 会保留右边32位 
 
-  a|b   每一位对齐 或运算  只支持整数 转换成32位数 会把小数去掉 保留右边32个比特
+  a|b 
 
   a&b
 
@@ -740,15 +727,6 @@ function f() {    //Temper Dead Zone  TDZ
   console.log(a) 
 }
 //报错 不能在初始化变量前访问他
-
-
-var a = 8
-console.log(a * a)
-
-var a = 8
-console.log(a * a)
-
-// 64 64 6
 
 let a = 8
 console.log(a * a)
