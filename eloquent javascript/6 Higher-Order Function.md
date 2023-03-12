@@ -63,12 +63,6 @@ console.log(g(1, 2))
 ###  Abstracting array  traversal
 
 ```javascript
-//兜圈子的方式 遍历数组
-var array = [1, 2, 3]
-for (var i = 0; i < array.length; i++) {
-  var current = array[i]
-  console.log(current)
-}
 // 把遍历数组抽象
 function logEach(array) {
   for (var i = 0; i < array.length; i++) {
@@ -91,27 +85,9 @@ console.log(sum)
 //10
 ```
 
-```javascript
-var sum = 0
-function forEach(array, action) {
-  for (var i = 0; i < array.length; i++) {
-    action(array[i])
-  }
-}
-function addToSum(value) {
-  sum = sum + value
-}
-forEach([1, 2, 3, 4], addToSum)
-console.log(sum)
-```
-
 #### 数组的forEach 方法
 
 ```javascript
-[1, 2, 3, 4].forEach(function (val) {
-  console.log(val)
-})
-// 1 2 3 4
 [1, 2, 3, 4].forEach(function (val, index, thearray) {
   console.log(val, index, thearray)
 })
@@ -153,8 +129,6 @@ forEach({
 // 3 c
 
 ```
-
-![image-20200606212617515](6%20Higher-Order%20Function.assets/image-20200606212617515.png)
 
 #### Higher-order functions
 
@@ -224,8 +198,6 @@ console.log(noisy(Boolean)(0))
   ####  lexical scoping rules 词法作用域规则
   
   *  内部函数定义的变量并不会在外面被访问
-
-### 
 
 #### Passing alone arguments
 
@@ -442,7 +414,7 @@ forEach([1, 2, 3, 4], function (aryItem, idx) {
     targetIndex = idx
     return false
   }//相当于break
-}).map()
+})
 ```
 
 #### reduce

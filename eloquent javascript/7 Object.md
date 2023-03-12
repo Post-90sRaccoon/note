@@ -365,10 +365,6 @@ function getPrototypeOf(val){
 }
 ```
 
-
-
-`String.prototype.__proto__ === Object.prototype`
-
 ```javascript
 console.log(String.prototype.__proto__ === Object.prototype
 )
