@@ -1,4 +1,6 @@
-# 6 Higher-Order Function
+#  
+
+6 Higher-Order Function
 
    ```javascript
 //self-contained 自包含的 自解释的 不调用额外函数

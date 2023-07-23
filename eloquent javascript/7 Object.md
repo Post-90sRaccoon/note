@@ -17,56 +17,10 @@
   ==this不能赋值==  this.xxx可以
 
 ```javascript
-obj = {}
-obj.c = 8
-obj.f = function (a, b) {
-  console.log(a + b + this.c)
-}
-obj.f(1, 2)
-//11
-```
-
-```javascript
-var aryLike = {
-  0: 1,
-  1: 2,
-  length: 2
-}
-
-aryLike.push = function (val) {
-  this[this.length] = val
-  this.length++
-  return this.length
-}
-
-aryLike.push(3)
-console.log(aryLike)
-```
-
-```javascript
-var ary = [1, 2, 3]
-ary.push2 = function (val) {
-  this[this.length] = val
-  return this.length
-}
-//数组length会自动增加
-```
-
-```javascript
 var ary = []
 ary[8] = 0
 console.log(ary.length)
 //9
-```
-
-```javascript
-function speak(line) {
-  console.log("The" + this.type + " rabbit says '" + line + "'")
-}
-var whiteRabbit = { type: "white", speak: speak }
-var fatRabbit = { type: "fat", speak: speak }
-
-whiteRabbit.speak('ha')
 ```
 
 * bind和apply 的 第一个参数 this
@@ -91,11 +45,6 @@ function add(a, b, ...args) { } //rest paramater
 ```
 
 ```javascript
-var f = function () { return this.val }
-var obj = {
-  val: 3,
-  f: f
-}
 var obj = {
   val: 3,
   f: function () { return this.val }
@@ -120,33 +69,6 @@ f()        //单独的函数调用
 
 * 函数能访问到的非形参变量 取决于函数在哪定义 以及他在哪个作用域  形参优先
 
-```javascript
-f() //全局变量window
-obj.f() // obj
-f.call(o)
-f.apply(o) //第一个参数o
-```
-
-```javascript
-var a = 1
-console.log(this.a)
-//window
-
-function f() {
-  console.log(this, a)
-}
-
-function add() {
-  var a = 5
-  f() //this window
-  var obj = {
-    f: f
-  }
-  obj.f() // this obj
-  f.call([1, 2, 3])// this [1,2,3]
-}
-```
-
 * 如果一个函数中有this，**这个函数中包含多个对象，尽管这个函数是被最外层的对象所调用，this指向的也只是它上一级的对象**
 
   ```javascript
@@ -163,20 +85,6 @@ function add() {
   ```
 
   * 尽管对象b中没有属性a，这个this指向的也是对象b，因为this只会指向它的上一级对象，不管这个对象中有没有this要的东西
-```javascript
-var o = {
-    a:10,
-    b:{
-        a:12,
-        fn:function(){
-            console.log(this.a); //undefined
-            console.log(this); //window
-        }
-    }
-}
-var j = o.b.fn;
-j()
-```
 * this永远指向的是最后调用它的对象，也就是看它执行的时候是谁调用的
 
 * 构造函数版this
@@ -280,18 +188,6 @@ console.log(Object.getPrototypeOf(Object.prototype))
 * `empty._proto_`  得到原型的另外一种方法
 
 ```javascript
-p = { a: 1, b: 2 }
-empty.__proto__ = p
-//p所指的对象成了empty的原型
-empty.a //1
-empty.b //2
-
-//p.__proto__ = null
-//执行完上面操作会乱
-
-empty.a = 8 //增加自己的a属性 不会修改原型上的
-empty.__proto__.a = 9 //修改原型
-
 Array.a = 1
 var a = []
 a.a
@@ -303,13 +199,6 @@ a.a
 
 * 对象原型之间关系形成树状结构  不能有环   对象属性可以有环
 * 树的根部是`Object.prototype`
-
- ```javascript
-var obj = {}
-obj.prototype = { x: 1, y: 2 }
-console.log(obj.x)
-//undefined obj 的真正原型是在_proto_  没有x 所以是undefined prototype就是个普通的属性名字
- ```
 
 ```javascript
 ary = [] 
@@ -323,8 +212,6 @@ ary.__proto__.push === Array.prototype.push
 ```
 
 ```javascript
-'FJSDAK'.__proto__ === String.prototype
-// true
 String.prototype.__proto__ === Object.prototype
 // true
 
@@ -464,7 +351,7 @@ console.log(a)
 * 一个用new创建出来的对象一般被称做这个函数的实例
 * 所有function都有prototype属性（ 箭头函数没有）  
 * 这个属性默认指向空对象  里面有consrtructor 属性指向函数自己   TreeNode.prototype  一般都以Object.prototype为原型
-* 每一个被这个函数创建出来的实例都将以这个对象的prototype作为其原型对象
+* 每一个被这个函数创建出来的实例都将以这个函数的prototype作为其原型对象
 
 ```javascript
 function TreeNode(val) {

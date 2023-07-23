@@ -18,10 +18,9 @@ console.log('<\/script>')
 </script>
 ```
 
-* 全局变量document  访问对象
-* document.documentElement 指向html的对象
-* 程序的语法 整个构建
-* 浏览器可以实时显示页面DOM结构的样子
+* 全局变量 `document`  文档对象
+* `document.documentElement` 指向 `html` 的对象
+* 浏览器可以实时显示页面 `DOM` 结构的样子
 
 ![image-20200623201749651](11%20Dom.assets/image-20200623201749651.png)
 
@@ -30,27 +29,13 @@ console.log('<\/script>')
 * https://esprima.org/demo/parse.html#
 
 * 浏览器拿到语法树
-* 普通元素 html标签 有子节点
+* 普通元素 `html` 标签 有子节点
 * 文本结点 注释是叶子结点
-* 每个dom结点都有一个nodeType属性 包含代表结点类型的数值
+* 每个 `dom` 结点都有一个 `nodeType` 属性 包含代表结点类型的数值
 
 ![image-20200625221003356](11%20Dom.assets/image-20200625221003356.png)
 
 * 都是常量，大写，改不了
-
-### 不可改属性
-
-```javascript
-Object.defineProperties()
-
-obj = Object.freeze({ a: 1, b: 2 })
-//不能增加 不能删除 修改没用
-Object.seal({ a: 1, b: 2 })
-//seal 可以修改属性 不能删除 不能增加
-
-Object.preventExtensions({ a: 1, b: 2 })
-//阻止增加属性 可以删除属性
-```
 
 ### The Standard
 
@@ -132,7 +117,6 @@ function getElementById(id, node = document.documentElement) {
     for (var i = 0; i < node.children.length; i++) {
       var child = node.children[i]
       var result = getElementById(id, child)
-
       if (result) {
         return result
       }
