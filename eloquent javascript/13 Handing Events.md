@@ -12,27 +12,27 @@ window.addEventListener("click", function () {
 
 ```html
 <button>Click me</button>
- <p>No handler here</p>
+<p>No handler here</p>
 ```
 
 ```javascript
 var button = document.querySelector("button")
-    button.addEventListener('click', () => {
-      console.log(this) //[object HTMLButtonElement] 不用匿名函数是button 不然是window
-      console.log("button clicked")
-    })  
+button.addEventListener('click', () => {
+  console.log(this) //[object HTMLButtonElement] 不用匿名函数是button 不然是window
+  console.log("button clicked")
+})
 ```
 
-* `document.querySelector()`返回文档中与指定选择器或选择器组匹配的第一个 html元素[`Element`](https://developer.mozilla.org/zh-CN/docs/Web/API/Element)。 如果找不到匹配项，则返回`null`
+* `document.querySelector()` 返回文档中与指定选择器或选择器组匹配的第一个 `html` 元素[`Element`](https://developer.mozilla.org/zh-CN/docs/Web/API/Element)。 如果找不到匹配项，则返回`null`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
 
 ```javascript
 var button = document.querySelector("button")
-    button.onclick = function () {
-      console.log('button clicked')
-    }
+button.onclick = function () {
+  console.log('button clicked')
+}
 ```
 
-* `onclick`属性只有一个 可以变成set
+* `onclick` 属性只有一个 可以变成 `set`
 
 ```javascript
 let a = []
@@ -51,7 +51,7 @@ a.foo = 8
 if (a == 1 && a == 2 && a == 3) {
   console.log(true)
 }
-//有无可能让上面if条件成立 a是getter就可以了 第一调用返回1 第二次返回2
+// 有无可能让上面 if 条件成立 a 是 getter 就可以了 第一调用返回 1 第二次返回 2
 
 var i = 1
 Object.defineProperty(window, 'a', {
@@ -63,22 +63,22 @@ Object.defineProperty(window, 'a', {
 
 ```html
 <button onclick="foo()">Click me</button>
- <p>No handler here</p>
+<p>No handler here</p>
 ```
 
 ```javascript
 var button = document.querySelector("button")
-    function foo() {  //必须在全局
-      console.log(2)
-    }
+function foo() {  //必须在全局
+  console.log(2)
+}
 
-    button.onclick = function () { //只能一次
-      console.log(3)
-    }
+button.onclick = function () { //只能一次
+  console.log(3)
+}
 
-    button.addEventListener('click', function () { //也能全局 也能多次
-      console.log('1')
-    })
+button.addEventListener('click', function () { //也能全局 也能多次
+  console.log('1')
+})
 // 3 1
 ```
 
@@ -88,40 +88,40 @@ var button = document.querySelector("button")
 button.onclick = null
 
 var button = document.querySelector("button")
-    function once() {
-      console.log("Done.")
-      button.removeEventListener("click", once)
-    }
-    button.addEventListener("click", once)
-    //传入同一个函数once才能删
+function once() {
+  console.log("Done.")
+  button.removeEventListener("click", once)
+}
+button.addEventListener("click", once)
+//传入同一个函数once才能删
 ```
 
 ```javascript
  var button = document.querySelector("button")
-    button.addEventListener("click", function(){
-      console.log(1)
-    })
-    button.addEventListener("click", function(){
-      console.log(1)
-    })
-    //不能删除 不是同一个函数
+button.addEventListener("click", function(){
+  console.log(1)
+})
+button.removeEventListener("click", function(){
+  console.log(1)
+})
+//不能删除 不是同一个函数
 ```
 
 ```javascript
 var button = document.querySelector("button")
-    button.addEventListener('click',function(){
-      button.removeEventListener('click',arguments.callee) //调用函数自己
-    })
+button.addEventListener('click',function(){
+  button.removeEventListener('click',arguments.callee) //调用函数自己
+})
 ```
 
 ### Event objects
 
 ```javascript
 var button = document.querySelector("button")
-    button.addEventListener('click', function (e) {
-      console.log(e)
-      console.log('1')
-    })
+button.addEventListener('click', function (e) {
+  console.log(e)
+  console.log('1')
+})
 
 //MouseEvent
 //mousedown(按下去不松手) click
@@ -166,8 +166,8 @@ var button = document.querySelector("button")
 #### 关于position
 
 * **pageX/pageY:**
-  鼠标相对于整个页面的X/Y坐标。
-  整个页面就是整个网页的全部，比如说网页宽2000px，高3000px，那pageX,pageY的最大值就是它们了。
+  鼠标相对于整个页面的 X/Y 坐标。
+  整个页面就是整个网页的全部，比如说网页宽2000px，高3000px，那 `pageX,pageY` 的最大值就是它们了。
   特别说明：IE不支持！
 
 * **clientX/clientY**
@@ -185,7 +185,7 @@ var button = document.querySelector("button")
 
   
 
-* Event objects的type属性总是表示事件类型
+* `Event objects` 的 `type` 属性总是表示事件类型
 
 ```javascript
 var button = document.querySelector("button")
@@ -208,11 +208,11 @@ var button = document.querySelector("button")
 
 * 事件冒泡
 * 注册在祖先元素上的处理程序在后代元素发生相应事件时也会被调用。比如p标签内的一个button按钮被点击时，也会触发p元素的click事件
-```javascript
+```html
 <p>
-    <button>Click me</button>
-    Handler here
- </p>
+  <button>Click me</button>
+  Handler here
+</p>
 ```
 
 ```javascript
@@ -453,7 +453,7 @@ var button = document.querySelector('button')
   return '马保国'
   }
   //页面关闭前
-window.open('https://www.jd.com/')
+  window.open('https://www.jd.com/')
   ```
   
   

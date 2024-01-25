@@ -297,7 +297,7 @@ let parseJSON = (function () {
     if (str[i] === 'n') {
       return parseNull()
     }
-    return parseNumber() //不考虑传入的值有错有错 没有任何额外空白 剩下的都是数
+    return parseNumber() //不考虑传入的值有错 没有任何额外空白 剩下的都是数
   }
 
   function parseArray() {
@@ -444,7 +444,7 @@ aryLike instanceof Array
 
 ### Attributes
 
-* 有些html属性可以直接通过DOM Object的property访问
+* 有些 `html` 属性可以直接通过 `DOM Object` 的 `property` 访问
 
 ```javascript
 .src
@@ -494,11 +494,6 @@ aryLike instanceof Array
 <script>
   $0.dataset.foo
   //1234
-  $0.dataset.info
-  //{price:3233,id:392493490}
-  $0.dataset.fooBar
-  //true
-  $0.dataset.fooBar = false
   $0.dataset.zoo = '888'
   //888
   $0.textContent 
@@ -507,10 +502,10 @@ aryLike instanceof Array
   //返回的形态受css影响
   // $0.textContent返回的结点文字内容不受css影响，完全是由所有文本结点的内容拼接而成
   // $0.innerText返回的内容受css影响，会触发回流，如多个空格及回车会被合并成一个空格
-  
-//https://www.zhangxinxu.com/wordpress/2019/09/js-dom-innertext-textcontent/
 </script>
 ```
+
+[textContent 与 innerText](https://www.zhangxinxu.com/wordpress/2019/09/js-dom-innertext-textcontent/)
 
 ```javascript
 function getTextContentOfNode(node) {
@@ -956,40 +951,6 @@ function parseNot() {
 }
 ```
 
-```html
-<html lang="en">
-
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-</head>
-
-<body>
-  <p style="margin-top:200px;text-align: center;">
-    <img src="" style="border: 2px solid red; position: relative" alt="cat">
-  </p>
-  <script>
-    var cat = document.querySelector('img')
-    var angle = 0
-    var lastTime = null
-
-    function animate(time) {
-      if (lastTime != null) {
-        angle += (time - lastTime) * 0.001
-      }//按照时间 不同刷新率相同速度 离开也会运行 定死角度离开还在原地
-      lastTime = time
-      cat.style.top = Math.sin(angle) * 20 + 'px'
-      cat.style.left = Math.cos(angle) * 200 + 'px'
-      requestAnimationFrame(animate)
-    }
-    requestAnimationFrame(animate) //让一个函数在未来某个时间点(下一帧之前)执行
-  </script>
-</body>
-
-</html>
-```
-
 > $0.style.xxx  内联样式
 >
 > window.getComputedStyle()  获取计算样式
@@ -998,9 +959,9 @@ function parseNot() {
 
 ![image-20200630201754172](11%20Dom.assets/image-20200630201754172.png)
 
-* innerText和outerText 相同 当做文本 不会当成html
-* outerHTML  包含标签自身  innerHtml 子html  都是getter和setter
-* outerHtml可以直接赋值
+* `innerText` 和 `outerText` 相同 当做文本 不会当成 `html`
+* `outerHTML` 包含标签自身  `innerHtml` 子 `html`  都是 `getter` 和 `setter`
+* `outerHtml` 可以直接赋值
 
 ```javascript
 innerHTMLDescriptor = Object.getOwnPropertyDescriptor(HTMLElement.prototype.__proto__,   'innerHTML')
@@ -1009,59 +970,59 @@ innerHTMLDescriptor.get.call($0)
 
 ```javascript
 function getOuterHTML(node) {
-      var result = '<'
-      result += node.tagName
-      result += '>'
-      for (var i = 0; i < node.childNodes.length; i++) {
-        var child = node.childNodes[i]
-        if (child.nodeType == document.TEXT_NODE) {
-          result += child.nodeValue
-        } else if (child.nodeType == document.ELEMENT_NODE) {
-          result += getOuterHTML(child)
-        }
-      }
-      result += '</' + node.tagName + '>'
-      return result
+  var result = '<'
+  result += node.tagName
+  result += '>'
+  for (var i = 0; i < node.childNodes.length; i++) {
+    var child = node.childNodes[i]
+    if (child.nodeType == document.TEXT_NODE) {
+      result += child.nodeValue
+    } else if (child.nodeType == document.ELEMENT_NODE) {
+      result += getOuterHTML(child)
     }
+  }
+  result += '</' + node.tagName + '>'
+  return result
+}
 ```
 
 ```javascript
 function JSONStringify(value) {
-      if (Array.isArray(value)) {
-        var result = '['
-        for (var i = 0; i < value.length; i++) {
-          result += JSONStringify(value[i])
-          if (i < value.length - 1) {
-            result += ','
-          }
+    if (Array.isArray(value)) {
+      var result = '['
+      for (var i = 0; i < value.length; i++) {
+        result += JSONStringify(value[i])
+        if (i < value.length - 1) {
+          result += ','
         }
-        result += ']'
-        return result
       }
-      if (typeof value == 'string') {
-        return '"' + value + '"'
-      }
-      if (typeof value == 'number') {
-        return '' + value
-      }
-      if (typeof value === 'boolean') {
-        return '' + value
-      }
-      if (value === null) {
-        return 'null'
-      }
-      if (typeof value === 'object') {
-        var result = '{'
-        for (var key in value) {
-          var val = value[key]
-          result += '"' + key + '":'
-          result += JSONStringify(val) + ','
-        }
-        result = result.slice(0, -1) //去掉最后一个逗号
-        result += '}'
-      }
-    return result
+      result += ']'
+      return result
     }
+    if (typeof value == 'string') {
+      return '"' + value + '"'
+    }
+    if (typeof value == 'number') {
+      return '' + value
+    }
+    if (typeof value === 'boolean') {
+      return '' + value
+    }
+    if (value === null) {
+      return 'null'
+    }
+    if (typeof value === 'object') {
+      var result = '{'
+      for (var key in value) {
+        var val = value[key]
+        result += '"' + key + '":'
+        result += JSONStringify(val) + ','
+      }
+      result = result.slice(0, -1) //去掉最后一个逗号
+      result += '}'
+    }
+  return result
+  }
 ```
 
 #### 模板引擎
@@ -1110,181 +1071,5 @@ function template(tplStr) {
   funcSource += 'return result.join("")'
   return new Function('data', funcSource)
 }
-```
-
-#### 太阳和地球
-
-```html
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-  <style>
-    body {
-      text-align: center;
-      padding-top: 200px;
-    }
-
-    .sun {
-      background-color: gold;
-      border-radius: 99999px;
-      border: 3px solid orange;
-      width: 100px;
-      height: 100px;
-      text-align: center;
-      line-height: 100px;
-      font-size: 0;
-      display: inline-block;
-      position: relative;
-    }
-
-    .earth {
-      vertical-align: middle;
-      display: inline-block;
-      background-color: aqua;
-      border-radius: 9999px;
-      width: 20px;
-      height: 20px;
-      line-height: 20px;
-      border: 2px solid blue;
-      position: relative;
-    }
-
-    .moon {
-      vertical-align: middle;
-      display: inline-block;
-      background-color: orange;
-      border-radius: 9999px;
-      width: 5px;
-      height: 5px;
-      border: 1px solid yellow;
-      position: relative;
-    }
-  </style>
-</head>
-
-<body>
-  <div class="sun">
-    <div class="earth">
-      <div class="moon"></div>
-    </div>
-  </div>
-  <script>
-    let sun = document.querySelector('.sun')
-    let earth = document.querySelector('.earth')
-    let moon = document.querySelector('.moon')
-
-    let lastTime = null
-    let angle = 0
-    requestAnimationFrame(function ani(time) {
-      if (lastTime !== null) {
-        angle += (time - lastTime) * 0.001
-      }
-      lastTime = time
-
-      sun.style.top = Math.sin(angle) * 100 + 'px'
-      sun.style.left = Math.cos(angle) * 100 + 'px'
-
-      earth.style.top = Math.sin(angle * 2) * 200 + 'px'
-      earth.style.left = Math.cos(angle * 2) * 200 + 'px'
-
-      moon.style.top = Math.sin(angle * 2.4) * 70 + 'px'
-      moon.style.left = Math.cos(angle * 2.4) * 70 + 'px'
-      requestAnimationFrame(ani)
-    })
-  </script>
-</body>
-
-</html>
-```
-
-```html
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-  <style>
-    body {
-      text-align: center;
-      padding-top: 200px;
-    }
-
-    .sun,
-    .earth,
-    .moon {
-      position: fixed;
-    }
-
-    .sun {
-      background-color: gold;
-      border-radius: 99999px;
-      border: 3px solid orange;
-      width: 100px;
-      height: 100px;
-      margin-top: -53px;
-      margin-left: -53px;
-      /* 改变定位中心 */
-    }
-
-    .earth {
-      background-color: aqua;
-      border-radius: 9999px;
-      width: 20px;
-      height: 20px;
-      border: 2px solid blue;
-      margin-top: -12px;
-      margin-left: -12px;
-    }
-
-    .moon {
-      background-color: orange;
-      border-radius: 9999px;
-      width: 6px;
-      height: 6px;
-      margin-top: -4px;
-      margin-left: -4px;
-      border: 1px solid yellow;
-    }
-  </style>
-</head>
-
-<body>
-  <div class="sun"></div>
-  <div class="earth"></div>
-  <div class="moon"></div>
-
-  <script>
-    let sun = document.querySelector('.sun')
-    let earth = document.querySelector('.earth')
-    let moon = document.querySelector('.moon')
-
-    let lastTime = null
-    let angle = 0
-    requestAnimationFrame(function ani(time) {
-      if (lastTime !== null) {
-        angle += (time - lastTime) * 0.001
-      }
-      lastTime = time
-
-      sun.style.top = 300 + Math.sin(angle) * 100 + 'px'
-      sun.style.left = 400 + Math.cos(angle) * 100 + 'px'
-
-      earth.style.top = 300 + Math.sin(angle) * 100 + Math.sin(angle * 2) * 200 + 'px'
-      earth.style.left = 400 + Math.cos(angle) * 100 + Math.cos(angle * 2) * 200 + 'px'
-
-      moon.style.top = 300 + Math.sin(angle) * 100 + Math.sin(angle * 2) * 200 + Math.sin(angle * 2.4) * 70 + 'px'
-      moon.style.left = 400 + Math.cos(angle) * 100 + Math.cos(angle * 2) * 200 + Math.cos(angle * 2.4) * 70 + 'px'
-      requestAnimationFrame(ani)
-    })
-  </script>
-</body>
-
-</html>
 ```
 
